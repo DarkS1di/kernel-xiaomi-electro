@@ -1,0 +1,49 @@
+name: Build Kernel on GitHub Actions
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Making the Environment leaner
+      run: sudo snap list && sudo snap remove firefox && sudo apt remove -y snapd
+
+    - name: Update Environment
+      run: sudo apt update -y
+
+    - name: Install Dependencies
+      run: |
+        sudo apt install -y git-core gnupg build-essential zip \
+        curl libarchive-tools flex \
+        unzip python3 python3-pip python3-dev \
+        python-is-python3 ccache libncurses5-dev lzop \
+        patchelf git-lfs ripgrep &> /dev/null
+
+    - name: Set up Clang
+      run: |
+        chmod +x clang.sh
+        ./clang.sh
+
+    - name: Build Kernel
+      run: |
+        chmod +x build.sh
+        ./build.sh
+
+    - name: Package Kernel
+      run: |
+        cp -r scripts/packaging/AnyKernel3 .
+        chmod +x scripts/packaging/pack.sh
+        bash scripts/packaging/pack.sh out/arch/arm64/boot/Image electro-kernel-${{ github.run_number }}.zip
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: electro-kernel
+        path: electro-kernel-${{ github.run_number }}.zip
