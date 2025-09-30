@@ -4,8 +4,8 @@ set -e
 [ ! -e "scripts/packaging/pack.sh" ] && git submodule init && git submodule update
 [ ! -e "toolchain" ] && echo "Make toolchain avaliable at $(pwd)/toolchain" && exit
 
-export KBUILD_BUILD_USER=ash
-export KBUILD_BUILD_HOST=shogun
+export KBUILD_BUILD_USER=darks1di
+export KBUILD_BUILD_HOST=github_actions
 export ARCH=arm64
 PATH=$PWD/toolchain/bin:$PATH
 
