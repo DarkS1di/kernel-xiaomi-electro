@@ -31,6 +31,20 @@ jobs:
         chmod +x clang.sh
         ./clang.sh
 
+    - name: Apply Backport Patch
+      run: |
+        export KERNEL_ROOT=$GITHUB_WORKSPACE
+
+        echo "Apply Backport Patch..."
+        cp ./kernel_patches/backport/backport.patch $KERNEL_ROOT/
+
+        cd $KERNEL_ROOT
+        patch -p1 < backport.patch || echo "Manual patch may be required"
+
+    - name: KernelSU Next
+      run: | 
+        curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -
+
     - name: Build Kernel
       run: |
         chmod +x build.sh
