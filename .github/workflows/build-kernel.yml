@@ -40,10 +40,12 @@ jobs:
       run: |
         cp -r scripts/packaging/AnyKernel3 .
         chmod +x scripts/packaging/pack.sh
-        bash scripts/packaging/pack.sh out/arch/arm64/boot/Image electro-kernel-${{ github.run_number }}.zip
+        ZIP_NAME=electro-kernel-$(date +"%d.%m.%Y-%H%M%S").zip
+        echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
+        bash scripts/packaging/pack.sh out/arch/arm64/boot/Image $ZIP_NAME
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: electro-kernel
-        path: electro-kernel-${{ github.run_number }}.zip
+        path: ${{ env.ZIP_NAME }}
