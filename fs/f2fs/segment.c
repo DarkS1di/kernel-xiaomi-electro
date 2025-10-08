@@ -3654,14 +3654,8 @@ static int restore_curseg_summaries(struct f2fs_sb_info *sbi)
 	/* sanity check for summary blocks */
 	if (nats_in_cursum(nat_j) > NAT_JOURNAL_ENTRIES ||
 			sits_in_cursum(sit_j) > SIT_JOURNAL_ENTRIES) {
-<<<<<<< HEAD
 		f2fs_err(sbi, "invalid journal entries nats %u sits %u\n",
 			 nats_in_cursum(nat_j), sits_in_cursum(sit_j));
-=======
-		f2fs_msg(sbi->sb, KERN_ERR,
-			"invalid journal entries nats %u sits %u\n",
-			nats_in_cursum(nat_j), sits_in_cursum(sit_j));
->>>>>>> stable/linux-4.19.y
 		return -EINVAL;
 	}
 

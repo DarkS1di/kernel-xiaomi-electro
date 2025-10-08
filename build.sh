@@ -1,8 +1,17 @@
 #/bin/bash
 set -e
 
-[ ! -e "scripts/packaging/pack.sh" ] && git submodule init && git submodule update
-[ ! -e "toolchain" ] && echo "Make toolchain avaliable at $(pwd)/toolchain" && exit
+if [ ! -e "packaging/pack.sh" ]; then
+    echo "Error: pack.sh not found!"
+    echo "Make pack.sh available at packaging/pack.sh"
+    exit 1
+fi
+
+if [ ! -e "toolchain" ]; then
+    echo "Error: toolchain not found!"
+    echo "Make toolchain avaliable at $(pwd)/toolchain"
+    exit 1
+fi
 
 export KBUILD_BUILD_USER=darks1di
 export KBUILD_BUILD_HOST=github_actions

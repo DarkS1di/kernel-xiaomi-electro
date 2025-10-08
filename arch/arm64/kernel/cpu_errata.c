@@ -756,8 +756,6 @@ static struct midr_range broken_aarch32_aes[] = {
 };
 #endif
 
-<<<<<<< HEAD
-=======
 #ifdef CONFIG_ARM64_ERRATUM_3194386
 static const struct midr_range erratum_spec_ssbs_list[] = {
 	MIDR_ALL_VERSIONS(MIDR_CORTEX_A76),
@@ -784,7 +782,6 @@ static const struct midr_range erratum_spec_ssbs_list[] = {
 };
 #endif
 
->>>>>>> stable/linux-4.19.y
 const struct arm64_cpu_capabilities arm64_errata[] = {
 #if	defined(CONFIG_ARM64_ERRATUM_826319) || \
 	defined(CONFIG_ARM64_ERRATUM_827319) || \

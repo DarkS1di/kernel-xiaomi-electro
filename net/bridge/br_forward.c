@@ -260,17 +260,11 @@ static void maybe_deliver_addr(struct net_bridge_port *p, struct sk_buff *skb,
 	if (skb->dev == p->dev && ether_addr_equal(src, addr))
 		return;
 
-<<<<<<< HEAD
-	skb = skb_copy(skb, GFP_ATOMIC);
-	if (!skb) {
-		dev->stats.tx_dropped++;
-=======
 	__skb_push(skb, ETH_HLEN);
 	nskb = pskb_copy(skb, GFP_ATOMIC);
 	__skb_pull(skb, ETH_HLEN);
 	if (!nskb) {
-		DEV_STATS_INC(dev, tx_dropped);
->>>>>>> stable/linux-4.19.y
+		dev->stats.tx_dropped++;
 		return;
 	}
 

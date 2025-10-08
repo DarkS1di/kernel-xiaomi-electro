@@ -53,23 +53,15 @@
 #define ARM64_HAS_STAGE2_FWB			32
 #define ARM64_WORKAROUND_1463225		33
 #define ARM64_SSBS				34
-<<<<<<< HEAD
 #define ARM64_WORKAROUND_1188873		35
 #define ARM64_WORKAROUND_1542418		36
 #define ARM64_WORKAROUND_1542419		37
 #define ARM64_SPECTRE_BHB			38
 #define ARM64_WORKAROUND_1742098		39
+#define ARM64_HAS_SB				40
+#define ARM64_WORKAROUND_SPECULATIVE_SSBS	41
 
 /* kabi: reserve 40 - 62 for future cpu capabilities */
 #define ARM64_NCAPS				62
-=======
-#define ARM64_WORKAROUND_1542419		35
-#define ARM64_SPECTRE_BHB			36
-#define ARM64_WORKAROUND_1742098		37
-#define ARM64_HAS_SB				38
-#define ARM64_WORKAROUND_SPECULATIVE_SSBS	39
-
-#define ARM64_NCAPS				40
->>>>>>> stable/linux-4.19.y
 
 #endif /* __ASM_CPUCAPS_H */
