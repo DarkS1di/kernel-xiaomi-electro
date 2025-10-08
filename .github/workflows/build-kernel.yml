@@ -4,48 +4,44 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  update_kernel:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout source
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Making the Environment leaner
-      run: sudo snap list && sudo snap remove firefox && sudo apt remove -y snapd
+      - name: Set branch environment
+        run: echo "BRANCH_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
 
-    - name: Update Environment
-      run: sudo apt update -y
+      - name: Configure git user
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
 
-    - name: Install Dependencies
-      run: |
-        sudo apt install -y git-core gnupg build-essential zip \
-        curl libarchive-tools flex \
-        unzip python3 python3-pip python3-dev \
-        python-is-python3 ccache libncurses5-dev lzop \
-        patchelf git-lfs ripgrep &> /dev/null
+      - name: Add stable kernel remote
+        run: |
+          git remote add stable https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git || true
+          git fetch stable linux-4.19.y
 
-    - name: Set up Clang
-      run: |
-        chmod +x clang.sh
-        ./clang.sh
+      - name: Checkout current branch
+        run: git checkout $BRANCH_NAME
 
-    - name: Build Kernel
-      run: |
-        chmod +x build.sh
-        ./build.sh
+      - name: Merge stable 4.19.y
+        run: |
+          git merge --no-edit --ff stable/linux-4.19.y || true
 
-    - name: Package Kernel
-      run: |
-        cp -r scripts/packaging/AnyKernel3 .
-        chmod +x scripts/packaging/pack.sh
-        ZIP_NAME=electro-kernel-$(date +"%d.%m.%Y-%H%M%S").zip
-        echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
-        bash scripts/packaging/pack.sh out/arch/arm64/boot/Image $ZIP_NAME
+      - name: Commit auto-merged changes
+        run: |
+          git add -A
 
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: electro-kernel
-        path: ${{ env.ZIP_NAME }}
+          if ! git diff --cached --quiet; then
+            echo "Committing auto-merged changes..."
+            git commit -s -m "Auto-merge changes from stable/linux-4.19.y"
+          else
+            echo "No changes to commit."
+          fi
+
+      - name: Push changes
+        run: git push origin $BRANCH_NAME
