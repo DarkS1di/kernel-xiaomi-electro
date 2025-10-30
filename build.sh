@@ -1,9 +1,9 @@
 #/bin/bash
 set -e
 
-if [ ! -e "packaging/pack.sh" ]; then
+if [ ! -e "packaging/packaging/pack.sh" ]; then
     echo "Error: pack.sh not found!"
-    echo "Make pack.sh available at packaging/pack.sh"
+    echo "Make pack.sh available at packaging/packaging/pack.sh"
     exit 1
 fi
 
