@@ -46,7 +46,7 @@ jobs:
 
     - name: Kernel Packaging Version Move
       run: |
-        cp "packaging/version/default/version" "packaging/packaging/AnyKernel3"
+        cp packaging/version/default/version packaging/packaging/AnyKernel3
 
     - name: Package Kernel
       run: |
