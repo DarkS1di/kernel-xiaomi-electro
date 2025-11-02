@@ -43,6 +43,23 @@ jobs:
       run: | 
         curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -
 
+    - name: Apply Configs
+      run: |
+        sed -i '/CONFIG_HAVE_KRETPROBES=y/a CONFIG_KPROBE_EVENTS=y' arch/arm64/configs/vendor/chime_defconfig
+
+        cat <<'EOF' >> arch/arm64/configs/vendor/chime_defconfig
+
+        #
+        # KernelSU Next
+        #
+        CONFIG_KSU=y
+        CONFIG_KSU_KPROBES_HOOK=y
+        # CONFIG_KSU_DEBUG is not set
+        CONFIG_KSU_THRONE_TRACKER_ALWAYS_THREADED=y
+        # CONFIG_KSU_ALLOWLIST_WORKAROUND is not set
+        CONFIG_KSU_LSM_SECURITY_HOOKS=y
+        EOF
+
     - name: Build Kernel
       run: |
         chmod +x build.sh
