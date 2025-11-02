@@ -107,7 +107,7 @@ jobs:
 
     - name: Kernel Packaging Version Move
       run: |
-        cp "packaging/version/ksu_next-susfs/version" "packaging/packaging/AnyKernel3"
+        cp packaging/version/ksu_next-susfs/version packaging/packaging/AnyKernel3
 
     - name: Package Kernel
       run: |
