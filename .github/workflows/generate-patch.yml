@@ -11,10 +11,9 @@ on:
 jobs:
   create-patch:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -24,7 +23,7 @@ jobs:
           echo "Patch file created."
 
       - name: Upload patch artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: commit-patch
           path: '*.patch'

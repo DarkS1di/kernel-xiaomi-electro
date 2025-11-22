@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout source
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         submodules: recursive
 
@@ -58,7 +58,7 @@ jobs:
         bash packaging/packaging/pack.sh out/arch/arm64/boot/Image $ZIP_NAME
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: electro-kernel_v4.19.325-default
         path: ${{ env.ZIP_NAME }}
