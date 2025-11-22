@@ -1,0 +1,30 @@
+name: Generate Patch
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: 'Commit SHA for patch creation'
+        required: true
+        type: string
+
+jobs:
+  create-patch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create patch
+        run: |
+          git format-patch -1 ${{ github.event.inputs.commit_sha }}
+          echo "Patch file created."
+
+      - name: Upload patch artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: commit-patch
+          path: '*.patch'
