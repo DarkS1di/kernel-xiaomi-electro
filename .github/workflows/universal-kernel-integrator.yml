@@ -1,0 +1,98 @@
+name: Universal Kernel Integrator
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo_url:
+        description: 'URL Repository'
+        required: true
+        type: string
+      branch_name:
+        description: 'Branch'
+        required: true
+        type: string
+      upload_conflicts:
+        description: 'Upload Conflict Files'
+        required: false
+        type: boolean
+        default: true
+      force_push_conflicts:
+        description: 'Force Push Conflict Files'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  integrate-kernel:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Merge Upstream
+        id: merge_attempt
+        continue-on-error: true
+        run: |
+          echo "Adding remote: ${{ inputs.repo_url }}"
+          git remote add upstream ${{ inputs.repo_url }}
+
+          echo "Fetching branch: ${{ inputs.branch_name }}"
+          git fetch upstream ${{ inputs.branch_name }}
+
+          echo "Merging..."
+          git merge upstream/${{ inputs.branch_name }} --no-edit
+
+      - name: Collect Conflict Files
+        if: steps.merge_attempt.outcome == 'failure' && inputs.upload_conflicts == true
+        run: |
+          echo "Merge failed with conflicts. collecting files..."
+          mkdir -p conflict_files
+
+          git diff --name-only --diff-filter=U | while read file; do
+              mkdir -p "conflict_files/$(dirname "$file")"
+              cp "$file" "conflict_files/$file"
+              echo "Collected: $file"
+          done
+
+      - name: Upload Artifact
+        if: steps.merge_attempt.outcome == 'failure' && inputs.upload_conflicts == true
+        uses: actions/upload-artifact@v6
+        with:
+          name: conflict-files-${{ github.run_id }}
+          path: conflict_files
+
+      - name: Push Changes
+        run: |
+          OUTCOME="${{ steps.merge_attempt.outcome }}"
+          FORCE_PUSH="${{ inputs.force_push_conflicts }}"
+
+          if [ "$OUTCOME" == "success" ]; then
+            echo "Merge successful. Pushing..."
+            git push origin HEAD
+            exit 0
+          fi
+
+          if [ "$OUTCOME" == "failure" ] && [ "$FORCE_PUSH" == "true" ]; then
+            echo "WARNING: Pushing broken code with conflict markers!"
+            rm -rf conflict_files
+
+            git add .
+            git commit -m "FORCE MERGE: Committing conflicts from ${{ inputs.branch_name }}"
+            git push origin HEAD
+            exit 0
+          fi
+
+          if [ "$OUTCOME" == "failure" ]; then
+            echo "::error::Merge failed! Please resolve conflicts manually."
+            exit 1
+          fi
