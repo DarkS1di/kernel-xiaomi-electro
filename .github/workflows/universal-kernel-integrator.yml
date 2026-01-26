@@ -65,7 +65,7 @@ jobs:
       - name: Collect Conflict Files
         if: steps.merge_attempt.outcome == 'failure' && inputs.upload_conflicts == true
         run: |
-          echo "Merge failed with conflicts. collecting files..."
+          echo "Merge failed with conflicts. Collecting files..."
           mkdir -p conflict_files
 
           git diff --name-only --diff-filter=U | while read file; do
