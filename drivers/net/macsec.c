@@ -1199,8 +1199,11 @@ static rx_handler_result_t macsec_handle_frame(struct sk_buff **pskb)
 			rxsc_stats->stats.InPktsNotUsingSA++;
 			u64_stats_update_end(&rxsc_stats->syncp);
 			secy->netdev->stats.rx_errors++;
+<<<<<<< HEAD
 			if (active_rx_sa)
 				this_cpu_inc(active_rx_sa->stats->InPktsNotUsingSA);
+=======
+>>>>>>> upstream/deprecated/android-4.19-stable
 			goto drop_nosa;
 		}
 

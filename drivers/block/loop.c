@@ -226,6 +226,7 @@ static void __loop_update_dio(struct loop_device *lo, bool dio)
 }
 
 /**
+<<<<<<< HEAD
  * loop_set_size() - sets device size and notifies userspace
  * @lo: struct loop_device to set the size for
  * @size: new size of the loop device
@@ -243,9 +244,15 @@ static void loop_set_size(struct loop_device *lo, loff_t size)
 	kobject_uevent(&disk_to_dev(bdev->bd_disk)->kobj, KOBJ_CHANGE);
 }
 
+=======
+ * loop_validate_block_size() - validates the passed in block size
+ * @bsize: size to validate
+ */
+>>>>>>> upstream/deprecated/android-4.19-stable
 static int
 figure_loop_size(struct loop_device *lo, loff_t offset, loff_t sizelimit)
 {
+<<<<<<< HEAD
 	loff_t size = get_size(offset, sizelimit, lo->lo_backing_file);
 	sector_t x = (sector_t)size;
 
@@ -253,6 +260,30 @@ figure_loop_size(struct loop_device *lo, loff_t offset, loff_t sizelimit)
 		return -EFBIG;
 	loop_set_size(lo, size);
 	return 0;
+=======
+	if (bsize < 512 || bsize > PAGE_SIZE || !is_power_of_2(bsize))
+		return -EINVAL;
+
+	return 0;
+}
+
+/**
+ * loop_set_size() - sets device size and notifies userspace
+ * @lo: struct loop_device to set the size for
+ * @size: new size of the loop device
+ *
+ * Callers must validate that the size passed into this function fits into
+ * a sector_t, eg using loop_validate_size()
+ */
+static void loop_set_size(struct loop_device *lo, loff_t size)
+{
+	struct block_device *bdev = lo->lo_device;
+
+	set_capacity(lo->lo_disk, size);
+	bd_set_size(bdev, size << SECTOR_SHIFT);
+	/* let user-space know about the new size */
+	kobject_uevent(&disk_to_dev(bdev->bd_disk)->kobj, KOBJ_CHANGE);
+>>>>>>> upstream/deprecated/android-4.19-stable
 }
 
 static inline int
@@ -944,6 +975,7 @@ static int loop_prepare_queue(struct loop_device *lo)
 	return 0;
 }
 
+<<<<<<< HEAD
 static void loop_update_rotational(struct loop_device *lo)
 {
 	struct file *file = lo->lo_backing_file;
@@ -1058,6 +1090,8 @@ out:
 	return error;
 }
 
+=======
+>>>>>>> upstream/deprecated/android-4.19-stable
 static int
 loop_release_xfer(struct loop_device *lo)
 {
@@ -1238,33 +1272,57 @@ static int loop_clr_fd(struct loop_device *lo)
 	return __loop_clr_fd(lo, false);
 }
 
-/**
- * loop_set_status_from_info - configure device from loop_info
- * @lo: struct loop_device to configure
- * @info: struct loop_info64 to configure the device with
- *
- * Configures the loop device parameters according to the passed
- * in loop_info64 configuration.
- */
 static int
-loop_set_status_from_info(struct loop_device *lo,
-			  const struct loop_info64 *info)
+loop_set_status(struct loop_device *lo, const struct loop_info64 *info)
 {
 	int err;
+<<<<<<< HEAD
 	struct loop_func_table *xfer;
 	kuid_t uid = current_uid();
 	loff_t new_size;
 
 	if ((unsigned int) info->lo_encrypt_key_size > LO_KEY_SIZE)
 		return -EINVAL;
+=======
+	struct block_device *bdev;
+	kuid_t uid = current_uid();
+	int prev_lo_flags;
+	bool partscan = false;
+	bool size_changed = false;
+
+	err = mutex_lock_killable(&loop_ctl_mutex);
+	if (err)
+		return err;
+	if (lo->lo_encrypt_key_size &&
+	    !uid_eq(lo->lo_key_owner, uid) &&
+	    !capable(CAP_SYS_ADMIN)) {
+		err = -EPERM;
+		goto out_unlock;
+	}
+	if (lo->lo_state != Lo_bound) {
+		err = -ENXIO;
+		goto out_unlock;
+	}
+
+	if (lo->lo_offset != info->lo_offset ||
+	    lo->lo_sizelimit != info->lo_sizelimit) {
+		size_changed = true;
+		sync_blockdev(lo->lo_device);
+		invalidate_bdev(lo->lo_device);
+	}
+
+	/* I/O need to be drained during transfer transition */
+	blk_mq_freeze_queue(lo->lo_queue);
+>>>>>>> upstream/deprecated/android-4.19-stable
 
 	err = loop_release_xfer(lo);
 	if (err)
-		return err;
+		goto out_unfreeze;
 
 	if (info->lo_encrypt_type) {
 		unsigned int type = info->lo_encrypt_type;
 
+<<<<<<< HEAD
 		if (type >= MAX_LO_CRYPT)
 			return -EINVAL;
 		xfer = xfer_funcs[type];
@@ -1361,6 +1419,8 @@ loop_set_status(struct loop_device *lo, const struct loop_info64 *info)
 	if (err)
 		goto out_unfreeze;
 
+=======
+>>>>>>> upstream/deprecated/android-4.19-stable
 	if (size_changed) {
 		loff_t new_size = get_size(lo->lo_offset, lo->lo_sizelimit,
 					   lo->lo_backing_file);
@@ -1409,6 +1469,11 @@ loop_get_status(struct loop_device *lo, struct loop_info64 *info)
 	info->lo_number = lo->lo_number;
 	info->lo_offset = lo->lo_offset;
 	info->lo_sizelimit = lo->lo_sizelimit;
+
+	/* loff_t vars have been assigned __u64 */
+	if (lo->lo_offset < 0 || lo->lo_sizelimit < 0)
+		return -EOVERFLOW;
+
 	info->lo_flags = lo->lo_flags;
 	memcpy(info->lo_file_name, lo->lo_file_name, LO_NAME_SIZE);
 	memcpy(info->lo_crypt_name, lo->lo_crypt_name, LO_NAME_SIZE);

@@ -181,6 +181,7 @@ extern void timer_quiesce_cpu(void *cpup);
 extern void add_timer(struct timer_list *timer);
 
 extern int try_to_del_timer_sync(struct timer_list *timer);
+<<<<<<< HEAD
 extern int timer_delete_sync(struct timer_list *timer);
 
 extern struct timer_base timer_base_deferrable;
@@ -197,6 +198,9 @@ static inline int del_timer_sync(struct timer_list *timer)
 {
 	return timer_delete_sync(timer);
 }
+=======
+extern int del_timer_sync(struct timer_list *timer);
+>>>>>>> upstream/deprecated/android-4.19-stable
 
 #define del_singleshot_timer_sync(t) del_timer_sync(t)
 
