@@ -7,8 +7,13 @@ on:
         description: 'URL Repository'
         required: true
         type: string
-      branch_name:
-        description: 'Branch'
+      tag:
+        description: 'Tag'
+        required: false
+        type: boolean
+        default: false
+      target_ref:
+        description: 'Branch or Tag'
         required: true
         type: string
       upload_conflicts:
@@ -46,11 +51,16 @@ jobs:
           echo "Adding remote: ${{ inputs.repo_url }}"
           git remote add upstream ${{ inputs.repo_url }}
 
-          echo "Fetching branch: ${{ inputs.branch_name }}"
-          git fetch upstream ${{ inputs.branch_name }}
+          echo "Fetching: ${{ inputs.target_ref }} (Tag mode: ${{ inputs.tag }})"
+          git fetch upstream ${{ inputs.target_ref }}
 
-          echo "Merging..."
-          git merge upstream/${{ inputs.branch_name }} --no-edit
+          if [ "${{ inputs.tag }}" == "true" ]; then
+            echo "Merging TAG: ${{ inputs.target_ref }}"
+            git merge FETCH_HEAD --no-edit
+          else
+            echo "Merging BRANCH: upstream/${{ inputs.target_ref }}"
+            git merge "upstream/${{ inputs.target_ref }}" --no-edit
+          fi
 
       - name: Collect Conflict Files
         if: steps.merge_attempt.outcome == 'failure' && inputs.upload_conflicts == true
@@ -73,26 +83,23 @@ jobs:
 
       - name: Push Changes
         run: |
-          OUTCOME="${{ steps.merge_attempt.outcome }}"
-          FORCE_PUSH="${{ inputs.force_push_conflicts }}"
-
-          if [ "$OUTCOME" == "success" ]; then
+          if [ "${{ steps.merge_attempt.outcome }}" == "success" ]; then
             echo "Merge successful. Pushing..."
             git push origin HEAD
             exit 0
           fi
 
-          if [ "$OUTCOME" == "failure" ] && [ "$FORCE_PUSH" == "true" ]; then
+          if [ "${{ steps.merge_attempt.outcome }}" == "failure" ] && [ "${{ inputs.force_push_conflicts }}" == "true" ]; then
             echo "WARNING: Pushing broken code with conflict markers!"
             rm -rf conflict_files
 
             git add .
-            git commit -m "FORCE MERGE: Committing conflicts from ${{ inputs.branch_name }}"
+            git commit -m "FORCE MERGE: Committing conflicts from ${{ inputs.target_ref }}"
             git push origin HEAD
             exit 0
           fi
 
-          if [ "$OUTCOME" == "failure" ]; then
+          if [ "${{ steps.merge_attempt.outcome }}" == "failure" ]; then
             echo "::error::Merge failed! Please resolve conflicts manually."
             exit 1
           fi
