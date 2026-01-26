@@ -42,6 +42,14 @@ config ZRAM_DEF_COMP_842
 
 endchoice
 
+config ZRAM_DEF_COMP
+	string
+	default "zstd" if ZRAM_DEF_COMP_ZSTD
+	default "lz4" if ZRAM_DEF_COMP_LZ4
+	default "lzo" if ZRAM_DEF_COMP_LZO
+	default "lz4hc" if ZRAM_DEF_COMP_LZ4HC
+	default "842" if ZRAM_DEF_COMP_842
+
 config ZRAM_DEDUP
 	bool "Deduplication support for ZRAM data"
 	depends on ZRAM
@@ -55,14 +63,6 @@ config ZRAM_DEDUP
 	  computation time trade-off. Please check the benefit before
 	  enabling this option. Experiment shows the positive effect when
 	  the zram is used as blockdev and is used to store build output.
-
-config ZRAM_DEF_COMP
-	string
-	default "zstd" if ZRAM_DEF_COMP_ZSTD
-	default "lz4" if ZRAM_DEF_COMP_LZ4
-	default "lzo" if ZRAM_DEF_COMP_LZO
-	default "lz4hc" if ZRAM_DEF_COMP_LZ4HC
-	default "842" if ZRAM_DEF_COMP_842
 
 config ZRAM_WRITEBACK
        bool "Write back incompressible or idle page to backing device"
