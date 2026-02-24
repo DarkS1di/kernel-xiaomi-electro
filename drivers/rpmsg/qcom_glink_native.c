@@ -2,11 +2,8 @@
 /*
  * Copyright (c) 2016-2017, Linaro Ltd
  * Copyright (c) 2018-2021, The Linux Foundation. All rights reserved.
-<<<<<<< HEAD
- * Copyright (C) 2020 XiaoMi, Inc.
-=======
  * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
->>>>>>> 5c7fe931ef86467d0d5779190af50924e0802264
+ * Copyright (C) 2020 XiaoMi, Inc.
  */
 
 #include <linux/idr.h>

@@ -110,8 +110,5 @@ obj-$(CONFIG_QTI_CRYPTO_TZ) += crypto-qti-tz.o
 obj-$(CONFIG_QTI_HW_KEY_MANAGER) += hwkm_qti.o
 hwkm_qti-y += hwkm.o
 obj-$(CONFIG_MSM_BAM_DMUX) += bam_dmux.o
-<<<<<<< HEAD
-obj-$(CONFIG_SERIAL_NUM) += serial_num.o
-=======
 obj-$(CONFIG_MSM_BOOT_TIME_MARKER) += boot_stats.o
->>>>>>> 5c7fe931ef86467d0d5779190af50924e0802264
+obj-$(CONFIG_SERIAL_NUM) += serial_num.o

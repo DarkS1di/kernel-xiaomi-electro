@@ -1,10 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2002,2007-2019, The Linux Foundation. All rights reserved.
-<<<<<<< HEAD
-=======
  * Copyright (c) 2022,2024 Qualcomm Innovation Center, Inc. All rights reserved.
->>>>>>> 5c7fe931ef86467d0d5779190af50924e0802264
  */
 
 #include <linux/slab.h>

@@ -225,12 +225,8 @@ static int venus_write_queue(struct venus_hfi_device *hdev,
 	wr_ptr = (u32 *)(queue->qmem.kva + (wr_idx << 2));
 
 	if (wr_ptr < (u32 *)queue->qmem.kva ||
-<<<<<<< HEAD
-	    wr_ptr > (u32 *)(queue->qmem.kva + queue->qmem.size - sizeof(*wr_ptr)))
-=======
 	    wr_ptr > (u32 *)(queue->qmem.kva +
 			queue->qmem.size - sizeof(*wr_ptr)))
->>>>>>> 5c7fe931ef86467d0d5779190af50924e0802264
 		return -EINVAL;
 
 	if (new_wr_idx < qsize) {
@@ -305,12 +301,8 @@ static int venus_read_queue(struct venus_hfi_device *hdev,
 	rd_ptr = (u32 *)(queue->qmem.kva + (rd_idx << 2));
 
 	if (rd_ptr < (u32 *)queue->qmem.kva ||
-<<<<<<< HEAD
-	    rd_ptr > (u32 *)(queue->qmem.kva + queue->qmem.size - sizeof(*rd_ptr)))
-=======
 	    rd_ptr > (u32 *)(queue->qmem.kva +
 				queue->qmem.size - sizeof(*rd_ptr)))
->>>>>>> 5c7fe931ef86467d0d5779190af50924e0802264
 		return -EINVAL;
 
 	dwords = *rd_ptr >> 2;
