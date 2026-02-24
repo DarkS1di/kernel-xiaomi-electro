@@ -1,25 +1,36 @@
 #!/bin/bash
 set -e
-if [ ! -e toolchain ]; then
-echo 'mkdir toolchain'
-mkdir toolchain
-elif [ ! -d toolchain ]; then
-echo '$(pwd)/toolchain is not a directory'
-exit 1
+
+if [ ! -e "toolchain" ]; then
+    echo "mkdir toolchain"
+    mkdir toolchain
+elif [ ! -d "toolchain" ]; then
+    echo "$(pwd)/toolchain is not a directory"
+    exit 1
 fi
-echo 'Setting up toolchain in $(pwd)/toolchain'
+
+echo "Setting up ZyC Clang in $(pwd)/toolchain/clang"
 cd toolchain
-echo 'Download antman and sync'
-bash <(curl -s "https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman") -S=05012024
-echo 'Clone libarchive for bsdtar'
-git clone https://github.com/libarchive/libarchive || true
-#sudo apt install -y pkg-config m4 libtool automake autoconf
-cd libarchive
-echo 'Build libarchive'
-bash build/autogen.sh
-./configure
-make -j$(nproc)
-cd ..
-echo 'Patch for glibc'
-PATH=$(pwd)/libarchive:$PATH bash <(curl -s "https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman") --patch=glibc
-echo 'Done'
+
+if [ -d "clang" ]; then
+    echo "Removing old clang directory..."
+    rm -rf clang
+fi
+
+mkdir clang
+cd clang
+
+URL="https://github.com/ZyCromerZ/Clang/releases/download/20.0.0git-20250129-release/Clang-20.0.0git-20250129.tar.gz"
+
+echo "Downloading ZyC Clang 20.0.0git..."
+wget -q "$URL" -O clang.tar.gz
+
+echo "Extracting..."
+tar -zxf clang.tar.gz
+
+rm clang.tar.gz
+
+echo "Done. Verifying version:"
+./bin/clang --version
+
+cd ../..
