@@ -1466,17 +1466,10 @@ static int etm4_probe(struct amba_device *adev, const struct amba_id *id)
 		return -ENODEV;
 	}
 
-<<<<<<< HEAD
 	cpus_read_lock();
 	ret = smp_call_function_single(drvdata->cpu,
 					etm4_init_arch_data, drvdata, 1);
 	if (ret) {
-=======
-	etmdrvdata[drvdata->cpu] = drvdata;
-
-	if (smp_call_function_single(drvdata->cpu,
-				etm4_init_arch_data,  drvdata, 1))
->>>>>>> upstream/deprecated/android-4.19-stable
 		dev_err(dev, "ETM arch init failed\n");
 		cpus_read_unlock();
 		return ret;
@@ -1485,7 +1478,6 @@ static int etm4_probe(struct amba_device *adev, const struct amba_id *id)
 		return -EINVAL;
 	}
 
-<<<<<<< HEAD
 	ret = etm4_pm_setup_cpuslocked();
 	cpus_read_unlock();
 
@@ -1493,11 +1485,6 @@ static int etm4_probe(struct amba_device *adev, const struct amba_id *id)
 	if (ret) {
 		etmdrvdata[drvdata->cpu] = NULL;
 		return ret;
-=======
-	if (etm4_arch_supported(drvdata->arch) == false) {
-		ret = -EINVAL;
-		goto err_arch_supported;
->>>>>>> upstream/deprecated/android-4.19-stable
 	}
 
 	etm4_init_trace_id(drvdata);
