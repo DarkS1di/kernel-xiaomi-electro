@@ -4,6 +4,10 @@
  * Copyright (C) 2020 XiaoMi, Inc.
  */
 
+/*
+ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ */
+
 #ifndef __QG_CORE_H__
 #define __QG_CORE_H__
 
@@ -76,6 +80,7 @@ struct qg_dt {
 	bool			multi_profile_load;
 	bool			tcss_enable;
 	bool			bass_enable;
+	bool			batt_less;
 };
 
 struct qg_esr_data {

@@ -659,11 +659,16 @@ source "drivers/misc/ocxl/Kconfig"
 source "drivers/misc/cardreader/Kconfig"
 source "drivers/misc/fpr_FingerprintCard/Kconfig"
 source "drivers/misc/qrc/Kconfig"
+<<<<<<< HEAD
 source "drivers/misc/goodix/Kconfig"
 source "drivers/misc/focaltech/Kconfig"
 source "drivers/misc/cdfingerfp/Kconfig"
 source "drivers/misc/xiaomi_fs/Kconfig"
 source "drivers/misc/hqsysfs/Kconfig"
+=======
+source "drivers/misc/usb7002/Kconfig"
+source "drivers/misc/heartbeat/Kconfig"
+>>>>>>> 5c7fe931ef86467d0d5779190af50924e0802264
 endmenu
 
 config OKL4_USER_VIPC
