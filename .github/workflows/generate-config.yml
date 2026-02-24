@@ -1,0 +1,47 @@
+name: Generate Kernel Config
+
+on:
+  workflow_dispatch:
+    inputs:
+      defconfig_name:
+        description: 'Defconfig Name'
+        required: true
+        type: string
+
+jobs:
+  generate-config:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Update Environment
+        run: |
+          sudo apt update
+
+      - name: Install Dependencies
+        run: |
+          sudo apt install -y build-essential
+
+      - name: Set up Clang
+        run: |
+          chmod +x clang.sh
+          ./clang.sh
+
+      - name: Generate .config
+        run: |
+          export ARCH=arm64
+
+          export PATH="$GITHUB_WORKSPACE/toolchain/clang/bin:$PATH"
+
+          make O=out CROSS_COMPILE=aarch64-linux-gnu- LLVM=1 LLVM_IAS=1 vendor/${{ inputs.defconfig_name }}
+
+          cp out/.config out/${{ inputs.defconfig_name }}
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ inputs.defconfig_name }}
+          path: out/${{ inputs.defconfig_name }}
