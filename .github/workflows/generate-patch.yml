@@ -22,8 +22,8 @@ jobs:
           git format-patch -1 ${{ github.event.inputs.commit_sha }}
           echo "Patch file created."
 
-      - name: Upload patch artifact
-        uses: actions/upload-artifact@v5
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v6
         with:
           name: commit-patch
           path: '*.patch'

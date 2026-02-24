@@ -7,58 +7,47 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout source
-      uses: actions/checkout@v6
-      with:
-        submodules: recursive
+      - name: Checkout source
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
 
-    - name: Making the Environment leaner
-      run: sudo snap list && sudo snap remove firefox && sudo apt remove -y snapd
+      - name: Update Environment
+        run: |
+          sudo apt update
 
-    - name: Update Environment
-      run: sudo apt update -y
+      - name: Install Dependencies
+        run: |
+          sudo apt install -y build-essential libelf-dev
 
-    - name: Install Dependencies
-      run: |
-        sudo apt install -y git-core gnupg build-essential zip \
-        curl libarchive-tools flex \
-        unzip python3 python3-pip python3-dev \
-        python-is-python3 ccache libncurses5-dev lzop \
-        patchelf git-lfs ripgrep &> /dev/null
+      - name: Set up Clang
+        run: |
+          chmod +x clang.sh
+          ./clang.sh
 
-    - name: Kernel Packaging Script
-      run: |
-        git clone --depth=1 -b kernel_4.19.325-packaging https://github.com/DarkS1di/kernel_packaging.git packaging/packaging
+      - name: Checkout Packaging Tools
+        run: |
+          git clone --depth=1 -b kernel_4.19.325-packaging https://github.com/DarkS1di/kernel_packaging.git toolchain/packaging
+          git clone --depth=1 -b kernel_4.19.325 https://github.com/DarkS1di/kernel_packaging_version.git toolchain/packaging/version
 
-    - name: Kernel Packaging Version
-      run: |
-        git clone --depth=1 -b kernel_4.19.325 https://github.com/DarkS1di/kernel_packaging_version.git packaging/version
+      - name: Build Kernel
+        run: |
+          chmod +x build.sh
+          ./build.sh
 
-    - name: Set up Clang
-      run: |
-        chmod +x clang.sh
-        ./clang.sh
+      - name: Package Kernel
+        run: |
+          ZIP_NAME=electro-kernel_v4.19.325-default-$(date +"%d.%m.%Y-%H%M%S").zip
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
 
-    - name: Build Kernel
-      run: |
-        chmod +x build.sh
-        ./build.sh
+          cp toolchain/packaging/version/default/version toolchain/packaging/AnyKernel3
 
-    - name: Kernel Packaging Version Move
-      run: |
-        cp packaging/version/default/version packaging/packaging/AnyKernel3
+          cp -r toolchain/packaging/AnyKernel3 .
+          chmod +x toolchain/packaging/pack.sh
+          bash toolchain/packaging/pack.sh out/arch/arm64/boot/Image $ZIP_NAME
 
-    - name: Package Kernel
-      run: |
-        ZIP_NAME=electro-kernel_v4.19.325-default-$(date +"%d.%m.%Y-%H%M%S").zip
-        echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
-
-        cp -r packaging/packaging/AnyKernel3 .
-        chmod +x packaging/packaging/pack.sh
-        bash packaging/packaging/pack.sh out/arch/arm64/boot/Image $ZIP_NAME
-
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v5
-      with:
-        name: electro-kernel_v4.19.325-default
-        path: ${{ env.ZIP_NAME }}
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: electro-kernel_v4.19.325-default
+          path: ${{ env.ZIP_NAME }}
