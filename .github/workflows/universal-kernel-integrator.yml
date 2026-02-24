@@ -7,20 +7,24 @@ on:
         description: 'URL Repository'
         required: true
         type: string
+
       tag:
         description: 'Tag'
         required: false
         type: boolean
         default: false
+
       target_ref:
         description: 'Branch or Tag'
         required: true
         type: string
+
       upload_conflicts:
         description: 'Upload Conflict Files'
         required: false
         type: boolean
         default: true
+
       force_push_conflicts:
         description: 'Force Push Conflict Files'
         required: false

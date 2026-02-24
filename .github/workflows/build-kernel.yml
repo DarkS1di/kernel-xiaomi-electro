@@ -1,7 +1,22 @@
-name: Build Kernel - Default
+name: Build Kernel
 
 on:
   workflow_dispatch:
+    inputs:
+      kernel_variant:
+        description: 'Kernel Variant'
+        required: true
+        type: choice
+        options:
+          - Default
+          - KernelSU
+        default: 'Default'
+
+      patch_version:
+        description: 'Patch Version'
+        required: true
+        type: string
+        default: '0'
 
 jobs:
   build:
@@ -27,8 +42,37 @@ jobs:
 
       - name: Checkout Packaging Tools
         run: |
-          git clone --depth=1 -b kernel_4.19.325-packaging https://github.com/DarkS1di/kernel_packaging.git toolchain/packaging
-          git clone --depth=1 -b kernel_4.19.325 https://github.com/DarkS1di/kernel_packaging_version.git toolchain/packaging/version
+          git clone --depth=1 -b kernel_packaging https://github.com/DarkS1di/kernel_packaging.git toolchain/packaging
+
+      - name: KernelSU
+        if: inputs.kernel_variant == 'KernelSU'
+        run: |
+          curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/master/kernel/setup.sh" | bash -
+
+      - name: Modify localversion File
+        run: |
+          YEAR=$(date +'%y')
+          MONTH=$(date +'%m')
+          PATCH="${{ github.event.inputs.patch_version }}"
+          VARIANT="${{ github.event.inputs.kernel_variant }}"
+
+          if [[ "$VARIANT" == "KernelSU" ]]; then
+            TYPE_SUFFIX="-ksu"
+          else
+            TYPE_SUFFIX="-default"
+          fi
+
+          BASE_NAME=$(cat localversion | tr -d '\n')
+
+          NEW_NAME="${BASE_NAME}-${YEAR}.${MONTH}.${PATCH}${TYPE_SUFFIX}"
+
+          echo "$NEW_NAME" > localversion
+
+          echo "The localversion file has been successfully updated. Contents:"
+          cat localversion
+
+          ZIP_NAME="${NEW_NAME:1}" 
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
 
       - name: Build Kernel
         run: |
@@ -37,17 +81,12 @@ jobs:
 
       - name: Package Kernel
         run: |
-          ZIP_NAME=electro-kernel_v4.19.325-default-$(date +"%d.%m.%Y-%H%M%S").zip
-          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
-
-          cp toolchain/packaging/version/default/version toolchain/packaging/AnyKernel3
-
           cp -r toolchain/packaging/AnyKernel3 .
           chmod +x toolchain/packaging/pack.sh
-          bash toolchain/packaging/pack.sh out/arch/arm64/boot/Image $ZIP_NAME
+          bash toolchain/packaging/pack.sh out/arch/arm64/boot/Image ${{ env.ZIP_NAME }}.zip
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v6
         with:
-          name: electro-kernel_v4.19.325-default
-          path: ${{ env.ZIP_NAME }}
+          name: ${{ env.ZIP_NAME }}
+          path: ${{ env.ZIP_NAME }}.zip
