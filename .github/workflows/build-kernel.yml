@@ -44,27 +44,60 @@ jobs:
         run: |
           git clone --depth=1 -b kernel_packaging https://github.com/DarkS1di/kernel_packaging.git toolchain/packaging
 
+      - name: Checkout KernelSU Patches
+        if: inputs.kernel_variant == 'KernelSU'
+        run: |
+          git clone --depth=1 -b main https://github.com/DarkS1di/ksu-kernel-4.19.git toolchain/kernelsu
+
+      - name: Apply KernelSU Patches
+        if: inputs.kernel_variant == 'KernelSU'
+        run: |
+          set -e
+
+          export KERNEL_ROOT=$GITHUB_WORKSPACE
+
+          echo "Apply KernelSU Patches..."
+          cp ./toolchain/kernelsu/kernel_patches/add_ksu_in_kernel-4.19.patch $KERNEL_ROOT/
+
+          cd $KERNEL_ROOT
+          patch -p1 --verbose < add_ksu_in_kernel-4.19.patch
+
+          echo "KernelSU Patches Applied Successfully"
+
       - name: KernelSU
         if: inputs.kernel_variant == 'KernelSU'
         run: |
           curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/master/kernel/setup.sh" | bash -
 
+      - name: Apply Configs
+        if: inputs.kernel_variant == 'KernelSU'
+        run: |
+          cat <<'EOF' >> arch/arm64/configs/vendor/chime_defconfig
+
+          #
+          # KernelSU
+          #
+          CONFIG_KSU=y
+          # CONFIG_KSU_EXTRAS is not set
+          # CONFIG_KSU_KPROBES_KSUD is not set
+          # CONFIG_KSU_TAMPER_SYSCALL_TABLE is not set
+          # CONFIG_KSU_KRETPROBES_SUCOMPAT is not set
+          # CONFIG_KSU_DEBUG is not set
+          # CONFIG_KSU_THRONE_TRACKER_ALWAYS_THREADED is not set
+          CONFIG_KSU_LSM_SECURITY_HOOKS=y
+          EOF
+
       - name: Modify localversion File
         run: |
-          YEAR=$(date +'%y')
-          MONTH=$(date +'%m')
-          PATCH="${{ github.event.inputs.patch_version }}"
-          VARIANT="${{ github.event.inputs.kernel_variant }}"
-
-          if [[ "$VARIANT" == "KernelSU" ]]; then
-            TYPE_SUFFIX="-ksu"
+          if [[ "${{ inputs.kernel_variant }}" == "KernelSU" ]]; then
+            TYPE_SUFFIX="ksu"
           else
-            TYPE_SUFFIX="-default"
+            TYPE_SUFFIX="default"
           fi
 
           BASE_NAME=$(cat localversion | tr -d '\n')
 
-          NEW_NAME="${BASE_NAME}-${YEAR}.${MONTH}.${PATCH}${TYPE_SUFFIX}"
+          NEW_NAME="${BASE_NAME}-$(date +"%y.%m").${{ inputs.patch_version }}-${TYPE_SUFFIX}"
 
           echo "$NEW_NAME" > localversion
 
@@ -82,8 +115,12 @@ jobs:
       - name: Package Kernel
         run: |
           cp -r toolchain/packaging/AnyKernel3 .
+
+          sed -i "s/Electro Build.*/Electro Build : $(date +"%y.%m").${{ inputs.patch_version }}/g" AnyKernel3/version
+          sed -i "s/Variant.*/Variant       : ${{ inputs.kernel_variant }}/g" AnyKernel3/version
+
           chmod +x toolchain/packaging/pack.sh
-          bash toolchain/packaging/pack.sh out/arch/arm64/boot/Image ${{ env.ZIP_NAME }}.zip
+          bash toolchain/packaging/pack.sh out/arch/arm64/boot/Image "${{ env.ZIP_NAME }}.zip"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v6
