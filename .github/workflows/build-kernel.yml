@@ -42,7 +42,7 @@ jobs:
 
       - name: Checkout Packaging Tools
         run: |
-          git clone --depth=1 -b kernel_packaging https://github.com/DarkS1di/kernel_packaging.git toolchain/packaging
+          git clone --depth=1 -b kernel-packaging https://github.com/DarkS1di/kernel-packaging.git toolchain/packaging
 
       - name: Checkout KernelSU Patches
         if: inputs.kernel_variant == 'KernelSU'
