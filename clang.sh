@@ -32,5 +32,3 @@ rm clang.tar.gz
 
 echo "Done. Verifying version:"
 ./bin/clang --version
-
-cd ../..
