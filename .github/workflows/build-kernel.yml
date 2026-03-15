@@ -42,12 +42,12 @@ jobs:
 
       - name: Checkout Packaging Tools
         run: |
-          git clone --depth=1 -b kernel-packaging https://github.com/DarkS1di/kernel-packaging.git toolchain/packaging
+          git clone --depth=1 -b kernel-packaging https://github.com/NoxS1d-Dev/kernel-packaging.git toolchain/packaging
 
       - name: Checkout KernelSU Patches
         if: inputs.kernel_variant == 'KernelSU'
         run: |
-          git clone --depth=1 -b main https://github.com/DarkS1di/ksu-kernel-4.19.git toolchain/kernelsu
+          git clone --depth=1 -b main https://github.com/NoxS1d-Dev/ksu-kernel-4.19.git toolchain/kernelsu
 
       - name: Apply KernelSU Patches
         if: inputs.kernel_variant == 'KernelSU'
