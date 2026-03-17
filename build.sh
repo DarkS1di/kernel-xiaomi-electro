@@ -13,7 +13,7 @@ if [ ! -e "toolchain/packaging" ]; then
     exit 1
 fi
 
-export KBUILD_BUILD_USER=darks1di
+export KBUILD_BUILD_USER=noxs1d
 export KBUILD_BUILD_HOST=github_actions
 export ARCH=arm64
 
