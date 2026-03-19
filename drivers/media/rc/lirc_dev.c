@@ -110,6 +110,204 @@ static int lirc_allocate_buffer(struct irctl *ir)
 	ir->chunk_size = ir->buf->chunk_size;
 
 out:
+<<<<<<< HEAD
+=======
+	mutex_unlock(&dev->lock);
+	return ret;
+}
+
+static __poll_t ir_lirc_poll(struct file *file, struct poll_table_struct *wait)
+{
+	struct lirc_fh *fh = file->private_data;
+	struct rc_dev *rcdev = fh->rc;
+	__poll_t events = 0;
+
+	poll_wait(file, &fh->wait_poll, wait);
+
+	if (!rcdev->registered) {
+		events = EPOLLHUP | EPOLLERR;
+	} else if (rcdev->driver_type != RC_DRIVER_IR_RAW_TX) {
+		if (fh->rec_mode == LIRC_MODE_SCANCODE &&
+		    !kfifo_is_empty(&fh->scancodes))
+			events = EPOLLIN | EPOLLRDNORM;
+
+		if (fh->rec_mode == LIRC_MODE_MODE2 &&
+		    !kfifo_is_empty(&fh->rawir))
+			events = EPOLLIN | EPOLLRDNORM;
+	}
+
+	return events;
+}
+
+static ssize_t ir_lirc_read_mode2(struct file *file, char __user *buffer,
+				  size_t length)
+{
+	struct lirc_fh *fh = file->private_data;
+	struct rc_dev *rcdev = fh->rc;
+	unsigned int copied;
+	int ret;
+
+	if (length < sizeof(unsigned int) || length % sizeof(unsigned int))
+		return -EINVAL;
+
+	do {
+		if (kfifo_is_empty(&fh->rawir)) {
+			if (file->f_flags & O_NONBLOCK)
+				return -EAGAIN;
+
+			ret = wait_event_interruptible(fh->wait_poll,
+					!kfifo_is_empty(&fh->rawir) ||
+					!rcdev->registered);
+			if (ret)
+				return ret;
+		}
+
+		if (!rcdev->registered)
+			return -ENODEV;
+
+		ret = mutex_lock_interruptible(&rcdev->lock);
+		if (ret)
+			return ret;
+		ret = kfifo_to_user(&fh->rawir, buffer, length, &copied);
+		mutex_unlock(&rcdev->lock);
+		if (ret)
+			return ret;
+	} while (copied == 0);
+
+	return copied;
+}
+
+static ssize_t ir_lirc_read_scancode(struct file *file, char __user *buffer,
+				     size_t length)
+{
+	struct lirc_fh *fh = file->private_data;
+	struct rc_dev *rcdev = fh->rc;
+	unsigned int copied;
+	int ret;
+
+	if (length < sizeof(struct lirc_scancode) ||
+	    length % sizeof(struct lirc_scancode))
+		return -EINVAL;
+
+	do {
+		if (kfifo_is_empty(&fh->scancodes)) {
+			if (file->f_flags & O_NONBLOCK)
+				return -EAGAIN;
+
+			ret = wait_event_interruptible(fh->wait_poll,
+					!kfifo_is_empty(&fh->scancodes) ||
+					!rcdev->registered);
+			if (ret)
+				return ret;
+		}
+
+		if (!rcdev->registered)
+			return -ENODEV;
+
+		ret = mutex_lock_interruptible(&rcdev->lock);
+		if (ret)
+			return ret;
+		ret = kfifo_to_user(&fh->scancodes, buffer, length, &copied);
+		mutex_unlock(&rcdev->lock);
+		if (ret)
+			return ret;
+	} while (copied == 0);
+
+	return copied;
+}
+
+static ssize_t ir_lirc_read(struct file *file, char __user *buffer,
+			    size_t length, loff_t *ppos)
+{
+	struct lirc_fh *fh = file->private_data;
+	struct rc_dev *rcdev = fh->rc;
+
+	if (rcdev->driver_type == RC_DRIVER_IR_RAW_TX)
+		return -EINVAL;
+
+	if (!rcdev->registered)
+		return -ENODEV;
+
+	if (fh->rec_mode == LIRC_MODE_MODE2)
+		return ir_lirc_read_mode2(file, buffer, length);
+	else /* LIRC_MODE_SCANCODE */
+		return ir_lirc_read_scancode(file, buffer, length);
+}
+
+static const struct file_operations lirc_fops = {
+	.owner		= THIS_MODULE,
+	.write		= ir_lirc_transmit_ir,
+	.unlocked_ioctl	= ir_lirc_ioctl,
+#ifdef CONFIG_COMPAT
+	.compat_ioctl	= ir_lirc_ioctl,
+#endif
+	.read		= ir_lirc_read,
+	.poll		= ir_lirc_poll,
+	.open		= ir_lirc_open,
+	.release	= ir_lirc_close,
+	.llseek		= no_llseek,
+};
+
+static void lirc_release_device(struct device *ld)
+{
+	struct rc_dev *rcdev = container_of(ld, struct rc_dev, lirc_dev);
+
+	put_device(&rcdev->dev);
+}
+
+int ir_lirc_register(struct rc_dev *dev)
+{
+	const char *rx_type, *tx_type;
+	int err, minor;
+
+	minor = ida_alloc_max(&lirc_ida, RC_DEV_MAX - 1, GFP_KERNEL);
+	if (minor < 0)
+		return minor;
+
+	device_initialize(&dev->lirc_dev);
+	dev->lirc_dev.class = lirc_class;
+	dev->lirc_dev.parent = &dev->dev;
+	dev->lirc_dev.release = lirc_release_device;
+	dev->lirc_dev.devt = MKDEV(MAJOR(lirc_base_dev), minor);
+	dev_set_name(&dev->lirc_dev, "lirc%d", minor);
+
+	INIT_LIST_HEAD(&dev->lirc_fh);
+	spin_lock_init(&dev->lirc_fh_lock);
+
+	cdev_init(&dev->lirc_cdev, &lirc_fops);
+
+	get_device(&dev->dev);
+
+	err = cdev_device_add(&dev->lirc_cdev, &dev->lirc_dev);
+	if (err)
+		goto out_put_device;
+
+	switch (dev->driver_type) {
+	case RC_DRIVER_SCANCODE:
+		rx_type = "scancode";
+		break;
+	case RC_DRIVER_IR_RAW:
+		rx_type = "raw IR";
+		break;
+	default:
+		rx_type = "no";
+		break;
+	}
+
+	if (dev->tx_ir)
+		tx_type = "raw IR";
+	else
+		tx_type = "no";
+
+	dev_info(&dev->dev, "lirc_dev: driver %s registered at minor = %d, %s receiver, %s transmitter",
+		 dev->driver_name, minor, rx_type, tx_type);
+
+	return 0;
+
+out_put_device:
+	put_device(&dev->lirc_dev);
+	ida_free(&lirc_ida, minor);
+>>>>>>> upstream/linux-4.19.y-cip
 	return err;
 }
 
@@ -129,6 +327,7 @@ int lirc_register_driver(struct lirc_driver *d)
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD
 	if (!d->fops) {
 		pr_err("fops pointer not filled in!\n");
 		return -EINVAL;
@@ -237,6 +436,10 @@ out_lock:
 	mutex_unlock(&lirc_dev_lock);
 
 	return err;
+=======
+	cdev_device_del(&dev->lirc_cdev, &dev->lirc_dev);
+	ida_free(&lirc_ida, MINOR(dev->lirc_dev.devt));
+>>>>>>> upstream/linux-4.19.y-cip
 }
 EXPORT_SYMBOL(lirc_register_driver);
 
