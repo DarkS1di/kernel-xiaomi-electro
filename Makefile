@@ -521,14 +521,9 @@ CLANG_FLAGS	+= -no-integrated-as
 endif
 CLANG_FLAGS	+= $(call cc-option, -Wno-misleading-indentation)
 CLANG_FLAGS	+= $(call cc-option, -Wno-bool-operation)
-CLANG_FLAGS	+= -Werror=unknown-warning-option
-<<<<<<< HEAD
 CLANG_FLAGS	+= $(call cc-option, -Wno-unsequenced)
-KBUILD_CFLAGS	+= $(CLANG_FLAGS)
-KBUILD_AFLAGS	+= $(CLANG_FLAGS)
-=======
+CLANG_FLAGS	+= -Werror=unknown-warning-option
 KBUILD_CPPFLAGS	+= $(CLANG_FLAGS)
->>>>>>> upstream/linux-4.19.y-cip
 export CLANG_FLAGS
 endif
 

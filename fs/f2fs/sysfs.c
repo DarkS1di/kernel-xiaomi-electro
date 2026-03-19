@@ -161,7 +161,6 @@ static ssize_t current_reserved_blocks_show(struct f2fs_attr *a,
 	return sprintf(buf, "%u\n", sbi->current_reserved_blocks);
 }
 
-<<<<<<< HEAD
 static ssize_t unusable_show(struct f2fs_attr *a,
 		struct f2fs_sb_info *sbi, char *buf)
 {
@@ -227,7 +226,6 @@ static ssize_t avg_vblocks_show(struct f2fs_attr *a,
 }
 #endif
 
-=======
 static ssize_t __sbi_show_value(struct f2fs_attr *a,
 		struct f2fs_sb_info *sbi, char *buf,
 		unsigned char *value)
@@ -248,7 +246,6 @@ static ssize_t __sbi_show_value(struct f2fs_attr *a,
 	}
 }
 
->>>>>>> upstream/linux-4.19.y-cip
 static ssize_t f2fs_sbi_show(struct f2fs_attr *a,
 			struct f2fs_sb_info *sbi, char *buf)
 {
@@ -282,9 +279,6 @@ static ssize_t f2fs_sbi_show(struct f2fs_attr *a,
 	return __sbi_show_value(a, sbi, buf, ptr + a->offset);
 }
 
-<<<<<<< HEAD
-	return sprintf(buf, "%u\n", *ui);
-=======
 static void __sbi_store_value(struct f2fs_attr *a,
 			struct f2fs_sb_info *sbi,
 			unsigned char *ui, unsigned long value)
@@ -304,9 +298,8 @@ static void __sbi_store_value(struct f2fs_attr *a,
 		break;
 	default:
 		f2fs_bug_on(sbi, 1);
-		f2fs_msg(sbi->sb, KERN_ERR, "store sysfs node value with wrong type");
+		f2fs_err(sbi, "store sysfs node value with wrong type");
 	}
->>>>>>> upstream/linux-4.19.y-cip
 }
 
 static ssize_t __sbi_store(struct f2fs_attr *a,
@@ -430,7 +423,6 @@ out:
 		return count;
 	}
 
-<<<<<<< HEAD
 	if (!strcmp(a->attr.name, "iostat_period_ms")) {
 		if (t < MIN_IOSTAT_PERIOD_MS || t > MAX_IOSTAT_PERIOD_MS)
 			return -EINVAL;
@@ -440,10 +432,7 @@ out:
 		return count;
 	}
 
-	*ui = (unsigned int)t;
-=======
 	__sbi_store_value(a, sbi, ptr + a->offset, t);
->>>>>>> upstream/linux-4.19.y-cip
 
 	return count;
 }

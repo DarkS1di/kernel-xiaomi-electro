@@ -177,16 +177,6 @@ static int cht_int33fe_probe(struct platform_device *pdev)
 
 	data->connections[0].fwnode = NULL;
 	data->connections[0].endpoint[0] = "port0";
-<<<<<<< HEAD
-	data->connections[0].endpoint[1] = "i2c-pi3usb30532-switch";
-	data->connections[0].id = "orientation-switch";
-	data->connections[1].endpoint[0] = "port0";
-	data->connections[1].endpoint[1] = "i2c-pi3usb30532-mux";
-	data->connections[1].id = "mode-switch";
-	data->connections[2].endpoint[0] = "i2c-fusb302";
-	data->connections[2].endpoint[1] = "intel_xhci_usb_sw-role-switch";
-	data->connections[2].id = "usb-role-switch";
-=======
 	data->connections[0].endpoint[1] = "i2c-pi3usb30532";
 	data->connections[0].id = "typec-switch";
 	data->connections[1].fwnode = NULL;
@@ -201,7 +191,6 @@ static int cht_int33fe_probe(struct platform_device *pdev)
 	data->connections[3].endpoint[0] = "i2c-fusb302";
 	data->connections[3].endpoint[1] = "intel_xhci_usb_sw-role-switch";
 	data->connections[3].id = "usb-role-switch";
->>>>>>> upstream/linux-4.19.y-cip
 
 	device_connections_add(data->connections);
 

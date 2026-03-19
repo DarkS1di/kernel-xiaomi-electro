@@ -2279,18 +2279,11 @@ done:
 
 static int dwc3_gadget_run_stop(struct dwc3 *dwc, int is_on, int suspend)
 {
-<<<<<<< HEAD
 	u32			reg, reg1;
 	u32			timeout = 1500;
-
-	dbg_event(0xFF, "run_stop", is_on);
-=======
-	u32			reg;
-	u32			timeout = 500;
 	u32			saved_config = 0;
 
-	if (pm_runtime_suspended(dwc->dev))
-		return 0;
+	dbg_event(0xFF, "run_stop", is_on);
 
 	/*
 	 * When operating in USB 2.0 speeds (HS/FS), ensure that
@@ -2319,7 +2312,6 @@ static int dwc3_gadget_run_stop(struct dwc3 *dwc, int is_on, int suspend)
 	if (saved_config)
 		dwc3_writel(dwc->regs, DWC3_GUSB2PHYCFG(0), reg);
 
->>>>>>> upstream/linux-4.19.y-cip
 	reg = dwc3_readl(dwc->regs, DWC3_DCTL);
 	if (is_on) {
 		if (dwc->revision <= DWC3_REVISION_187A) {
@@ -2393,7 +2385,12 @@ static int dwc3_gadget_run_stop(struct dwc3 *dwc, int is_on, int suspend)
 		reg &= DWC3_DSTS_DEVCTRLHLT;
 	} while (--timeout && !(!is_on ^ !reg));
 
-<<<<<<< HEAD
+	if (saved_config) {
+		reg = dwc3_readl(dwc->regs, DWC3_GUSB2PHYCFG(0));
+		reg |= saved_config;
+		dwc3_writel(dwc->regs, DWC3_GUSB2PHYCFG(0), reg);
+	}
+
 	if (!timeout) {
 		dev_err(dwc->dev, "failed to %s controller\n",
 				is_on ? "start" : "stop");
@@ -2401,15 +2398,6 @@ static int dwc3_gadget_run_stop(struct dwc3 *dwc, int is_on, int suspend)
 			dbg_event(0xFF, "STARTTOUT", reg);
 		else
 			dbg_event(0xFF, "STOPTOUT", reg);
-=======
-	if (saved_config) {
-		reg = dwc3_readl(dwc->regs, DWC3_GUSB2PHYCFG(0));
-		reg |= saved_config;
-		dwc3_writel(dwc->regs, DWC3_GUSB2PHYCFG(0), reg);
-	}
-
-	if (!timeout)
->>>>>>> upstream/linux-4.19.y-cip
 		return -ETIMEDOUT;
 	}
 

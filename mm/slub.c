@@ -726,17 +726,13 @@ void object_err(struct kmem_cache *s, struct page *page,
 			u8 *object, char *reason)
 {
 	slab_bug(s, "%s", reason);
-<<<<<<< HEAD
-	print_trailer(s, page, object);
-	slab_panic(reason);
-=======
 	if (!object || !check_valid_pointer(s, page, object)) {
 		print_page_info(page);
 		pr_err("Invalid pointer 0x%p\n", object);
 	} else {
 		print_trailer(s, page, object);
 	}
->>>>>>> upstream/linux-4.19.y-cip
+	slab_panic(reason);
 }
 
 static __printf(3, 4) void slab_err(struct kmem_cache *s, struct page *page,

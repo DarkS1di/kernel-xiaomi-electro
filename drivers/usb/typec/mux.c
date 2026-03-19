@@ -44,7 +44,6 @@ static void *typec_switch_match(struct device_connection *con, int ep,
 {
 	struct device *dev;
 
-<<<<<<< HEAD
 	if (con->fwnode) {
 		if (con->id && !fwnode_property_present(con->fwnode, con->id))
 			return NULL;
@@ -57,27 +56,6 @@ static void *typec_switch_match(struct device_connection *con, int ep,
 	}
 
 	return dev ? to_typec_switch(dev) : ERR_PTR(-EPROBE_DEFER);
-=======
-	if (!con->fwnode) {
-		list_for_each_entry(sw, &switch_list, entry)
-			if (!strcmp(con->endpoint[ep], dev_name(sw->dev)))
-				return sw;
-		return ERR_PTR(-EPROBE_DEFER);
-	}
-
-	/*
-	 * With OF graph the mux node must have a boolean device property named
-	 * "orientation-switch".
-	 */
-	if (con->id && !fwnode_property_present(con->fwnode, con->id))
-		return NULL;
-
-	list_for_each_entry(sw, &switch_list, entry)
-		if (dev_fwnode(sw->dev) == con->fwnode)
-			return sw;
-
-	return con->id ? ERR_PTR(-EPROBE_DEFER) : NULL;
->>>>>>> upstream/linux-4.19.y-cip
 }
 
 /**
@@ -211,7 +189,6 @@ static int mux_fwnode_match(struct device *dev, const void *fwnode)
 static void *typec_mux_match(struct device_connection *con, int ep, void *data)
 {
 	const struct typec_altmode_desc *desc = data;
-<<<<<<< HEAD
 	struct device *dev;
 	bool match;
 	int nval;
@@ -224,19 +201,6 @@ static void *typec_mux_match(struct device_connection *con, int ep, void *data)
 					con->endpoint[ep], name_match);
 
 		return dev ? to_typec_switch(dev) : ERR_PTR(-EPROBE_DEFER);
-=======
-	struct typec_mux *mux;
-	int nval;
-	bool match;
-	u16 *val;
-	int i;
-
-	if (!con->fwnode) {
-		list_for_each_entry(mux, &mux_list, entry)
-			if (!strcmp(con->endpoint[ep], dev_name(mux->dev)))
-				return mux;
-		return ERR_PTR(-EPROBE_DEFER);
->>>>>>> upstream/linux-4.19.y-cip
 	}
 
 	/*
@@ -256,11 +220,7 @@ static void *typec_mux_match(struct device_connection *con, int ep, void *data)
 	}
 
 	/* Alternate Mode muxes */
-<<<<<<< HEAD
 	nval = fwnode_property_count_u16(con->fwnode, "svid");
-=======
-	nval = fwnode_property_read_u16_array(con->fwnode, "svid", NULL, 0);
->>>>>>> upstream/linux-4.19.y-cip
 	if (nval <= 0)
 		return NULL;
 
@@ -268,17 +228,10 @@ static void *typec_mux_match(struct device_connection *con, int ep, void *data)
 	if (!val)
 		return ERR_PTR(-ENOMEM);
 
-<<<<<<< HEAD
 	ret = fwnode_property_read_u16_array(con->fwnode, "svid", val, nval);
 	if (ret < 0) {
 		kfree(val);
 		return ERR_PTR(ret);
-=======
-	nval = fwnode_property_read_u16_array(con->fwnode, "svid", val, nval);
-	if (nval < 0) {
-		kfree(val);
-		return ERR_PTR(nval);
->>>>>>> upstream/linux-4.19.y-cip
 	}
 
 	for (i = 0; i < nval; i++) {
@@ -292,18 +245,10 @@ static void *typec_mux_match(struct device_connection *con, int ep, void *data)
 	return NULL;
 
 find_mux:
-<<<<<<< HEAD
 	dev = class_find_device(&typec_mux_class, NULL, con->fwnode,
 				mux_fwnode_match);
 
 	return dev ? to_typec_mux(dev) : ERR_PTR(-EPROBE_DEFER);
-=======
-	list_for_each_entry(mux, &mux_list, entry)
-		if (dev_fwnode(mux->dev) == con->fwnode)
-			return mux;
-
-	return match ? ERR_PTR(-EPROBE_DEFER) : NULL;
->>>>>>> upstream/linux-4.19.y-cip
 }
 
 /**

@@ -1311,9 +1311,6 @@ static void retract_page_tables(struct address_space *mapping, pgoff_t pgoff)
 				spinlock_t *ptl;
 				unsigned long end = addr + HPAGE_PMD_SIZE;
 
-<<<<<<< HEAD
-				vm_write_begin(vma);
-=======
 				/*
 				 * Re-check whether we have an ->anon_vma, because
 				 * collapse_and_free_pmd() requires that either no
@@ -1326,7 +1323,7 @@ static void retract_page_tables(struct address_space *mapping, pgoff_t pgoff)
 					up_write(&mm->mmap_sem);
 					continue;
 				}
->>>>>>> upstream/linux-4.19.y-cip
+				vm_write_begin(vma);
 				mmu_notifier_invalidate_range_start(mm, addr,
 								    end);
 				ptl = pmd_lock(mm, pmd);

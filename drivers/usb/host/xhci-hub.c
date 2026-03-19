@@ -1615,8 +1615,6 @@ int xhci_hub_status_data(struct usb_hcd *hcd, char *buf)
 
 	status = bus_state->resuming_ports;
 
-<<<<<<< HEAD
-=======
 	/*
 	 * SS devices are only visible to roothub after link training completes.
 	 * Keep polling roothubs for a grace period after xHC start
@@ -1628,7 +1626,6 @@ int xhci_hub_status_data(struct usb_hcd *hcd, char *buf)
 			xhci->run_graceperiod = 0;
 	}
 
->>>>>>> upstream/linux-4.19.y-cip
 	mask = PORT_CSC | PORT_PEC | PORT_OCC | PORT_PLC | PORT_WRC | PORT_CEC;
 
 	/* For each port, did anything change?  If so, set that bit in buf. */

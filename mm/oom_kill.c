@@ -41,13 +41,10 @@
 #include <linux/kthread.h>
 #include <linux/init.h>
 #include <linux/mmu_notifier.h>
-<<<<<<< HEAD
 #include <linux/memory_hotplug.h>
 #include <linux/show_mem_notifier.h>
 #include <linux/psi.h>
-=======
 #include <linux/cred.h>
->>>>>>> upstream/linux-4.19.y-cip
 
 #include <asm/tlb.h>
 #include "internal.h"
@@ -880,12 +877,8 @@ static void __mark_oom_victim(struct task_struct *tsk)
  */
 static void mark_oom_victim(struct task_struct *tsk)
 {
-<<<<<<< HEAD
-=======
 	const struct cred *cred;
-	struct mm_struct *mm = tsk->mm;
 
->>>>>>> upstream/linux-4.19.y-cip
 	WARN_ON(oom_killer_disabled);
 	/* OOM killer might race with memcg OOM */
 	if (test_and_set_tsk_thread_flag(tsk, TIF_MEMDIE))

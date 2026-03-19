@@ -898,9 +898,8 @@ void sdhci_end_tuning(struct sdhci_host *host);
 void sdhci_reset_tuning(struct sdhci_host *host);
 void sdhci_send_tuning(struct sdhci_host *host, u32 opcode);
 
-<<<<<<< HEAD
 void sdhci_cfg_irq(struct sdhci_host *host, bool enable, bool sync);
-=======
+
 #if defined(CONFIG_DYNAMIC_DEBUG) || \
 	(defined(CONFIG_DYNAMIC_DEBUG_CORE) && defined(DYNAMIC_DEBUG_MODULE))
 #define SDHCI_DBG_ANYWAY 0
@@ -917,5 +916,4 @@ do {									\
 		sdhci_dumpregs(host);					\
 } while (0)
 
->>>>>>> upstream/linux-4.19.y-cip
 #endif /* __SDHCI_HW_H */

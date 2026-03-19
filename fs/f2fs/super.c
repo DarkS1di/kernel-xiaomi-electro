@@ -3771,25 +3771,15 @@ try_onemore:
 		}
 	} else {
 		err = f2fs_recover_fsync_data(sbi, true);
-<<<<<<< HEAD
-
-		if (!f2fs_readonly(sb) && err > 0) {
-			err = -EINVAL;
-			f2fs_err(sbi, "Need to recover fsync data");
-			goto free_meta;
-=======
 		if (err > 0) {
 			if (!f2fs_readonly(sb)) {
-				f2fs_msg(sb, KERN_ERR,
-					"Need to recover fsync data");
 				err = -EINVAL;
+				f2fs_err(sbi, "Need to recover fsync data");
 				goto free_meta;
 			} else {
-				f2fs_msg(sb, KERN_INFO,
-					"drop all fsynced data");
+				f2fs_info(sbi, "drop all fsynced data");
 				err = 0;
 			}
->>>>>>> upstream/linux-4.19.y-cip
 		}
 	}
 reset_checkpoint:
