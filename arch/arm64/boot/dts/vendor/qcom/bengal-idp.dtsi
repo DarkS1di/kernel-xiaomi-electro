@@ -4,7 +4,6 @@
 #include "bengal-audio-overlay.dtsi"
 #include "bengal-thermal-overlay.dtsi"
 #include "bengal-sde-display.dtsi"
-#include "camera/bengal-camera-sensor-idp.dtsi"
 
 &tlmm {
 	fpc_reset_int: fpc_reset_int {
@@ -88,11 +87,11 @@
 		status = "ok";
 	};
 
-	xiaomi_touch{
-	compatible = "xiaomi-touch";
-	status = "ok";
-	touch,name = "xiaomi-touch";
-    };
+	xiaomi_touch {
+		compatible = "xiaomi-touch";
+		status = "ok";
+		touch,name = "xiaomi-touch";
+	};
 
 	focalfp {
 		compatible = "focaltech,fingerprint";
@@ -105,7 +104,7 @@
 	};
 
 	cdfinger_fingerprint {
-        compatible = "cdfinger,fingerprint";
+		compatible = "cdfinger,fingerprint";
 		interrupt-parent = <&tlmm>;
 		interrupts = <97 0x0>;
 		cdfinger,reset_gpio = <&tlmm 34 0>;
@@ -302,7 +301,8 @@
 				&nfc_clk_req_suspend>;
 		status = "ok";
 	};
-	vituralsar@33{/*Add by HQ-102007757 for vituralsar*/
+
+	vituralsar@33 { /* Add by HQ-102007757 for vituralsar */
 		compatible = "virtualsar,sar";
 		reg = <0x33>;
 		interrupt-parent = <&tlmm>;
@@ -443,12 +443,11 @@
 	qcom,bl-pmic-pwm-period-usecs = <100>;
 	qcom,mdss-dsi-bl-min-level = <1>;
 	qcom,mdss-dsi-bl-max-level = <4095>;
-	qcom,mdss-brightness-max-level = <255>;
+	qcom,mdss-brightness-max-level = <4095>;
 	qcom,platform-reset-gpio = <&tlmm 85 0>;
 	//qcom,platform-bklight-en-gpio = <&pmi632_gpios 99 0>;
 	qcom,platform-bklight-en-gpio = <&tlmm 99 0>;
 };
-
 
 //chenwenmin
 &dsi_ft8719_truly_v2_video {
@@ -458,9 +457,33 @@
 	qcom,bl-pmic-pwm-period-usecs = <100>;
 	qcom,mdss-dsi-bl-min-level = <1>;
 	qcom,mdss-dsi-bl-max-level = <4095>;
-	qcom,mdss-brightness-max-level = <255>;
+	qcom,mdss-brightness-max-level = <4095>;
 	qcom,platform-reset-gpio = <&tlmm 85 0>;
 	//qcom,platform-bklight-en-gpio = <&pmi632_gpios 99 0>;
+	qcom,platform-bklight-en-gpio = <&tlmm 99 0>;
+};
+
+&dsi_ft8720m_xinli_v2_video {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_pwm";
+	pwms = <&pm6125_pwm 0 0>;
+	qcom,bl-pmic-pwm-period-usecs = <100>;
+	qcom,mdss-dsi-bl-min-level = <1>;
+	qcom,mdss-dsi-bl-max-level = <4095>;
+	qcom,mdss-brightness-max-level = <255>;
+	qcom,platform-reset-gpio = <&tlmm 85 0>;
+	qcom,platform-bklight-en-gpio = <&tlmm 99 0>;
+};
+
+&dsi_nt36672a_truly_v2_video {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_pwm";
+	pwms = <&pm6125_pwm 0 0>;
+	qcom,bl-pmic-pwm-period-usecs = <100>;
+	qcom,mdss-dsi-bl-min-level = <1>;
+	qcom,mdss-dsi-bl-max-level = <4095>;
+	qcom,mdss-brightness-max-level = <4095>;
+	qcom,platform-reset-gpio = <&tlmm 85 0>;
 	qcom,platform-bklight-en-gpio = <&tlmm 99 0>;
 };
 
@@ -501,12 +524,12 @@
 	qcom,platform-bklight-en-gpio = <&pmi632_gpios 6 0>;
 };
 */
+
 &sde_dsi {
-	qcom,dsi-default-panel = <&dsi_td4330_truly_v2_video &dsi_ft8719_truly_v2_video &dsi_nt36672d_tianma_v2_video &dsi_nt36672d_xinli_v2_video>;
+	qcom,dsi-default-panel = <&dsi_td4330_truly_v2_video &dsi_ft8719_truly_v2_video &dsi_ft8720m_xinli_v2_video &dsi_nt36672d_tianma_v2_video &dsi_nt36672a_truly_v2_video &dsi_nt36672d_xinli_v2_video>;
 };
 
 /*
-
 &tlmm {
 	touch_vdd_default: touch_vdd_default {
 		mux {
@@ -606,69 +629,54 @@
 	};
 };
 */
+
 &qupv3_se1_i2c {
-
-    status = "ok";
-
-    sgm37603a_bl: sgm37603a_bl@36 {
-
-        compatible = "qcom,sgm37603a_bl";
-
-        reg = <0x36>;
-
-        pinctrl-names = "lcm_power_enable", "lcm_power_disable",
-
-                        "lcm_reset_enable", "lcm_reset_disable";
-
-        pinctrl-0 = <&lcm_power_enable_active >;
-
-    };
-
+	status = "ok";
+	sgm37603a_bl: sgm37603a_bl@36 {
+		compatible = "qcom,sgm37603a_bl";
+		reg = <0x36>;
+		pinctrl-names = "lcm_power_enable", "lcm_power_disable",
+		"lcm_reset_enable", "lcm_reset_disable";
+		pinctrl-0 = <&lcm_power_enable_active >;
+	};
 };
 
 &qupv3_se1_i2c {
-
-    status = "ok";
-
-    lm36923: lm36923@36 {
-
-        compatible = "ti,lm36923";
-
-        reg = <0x36>;
-
-    };
-
+	status = "ok";
+	lm36923: lm36923@36 {
+		compatible = "ti,lm36923";
+		reg = <0x36>;
+	};
 };
-
 
 &qupv3_se2_spi {
-	status = "okay";
+	status = "ok";
 	focaltech@0 { 
-			compatible = "focaltech,fts";
-			panel = <&dsi_ft8719_truly_v2_video>;
-			reg = <0>;
-			spi-max-frequency = <6000000>;
-			interrupt-parent = <&tlmm>;
-			interrupts = <93 0x2>;
-			focaltech,reset-gpio = <&tlmm 103 0x01>;
-			focaltech,irq-gpio = <&tlmm 93 0x02>;
-			focaltech,max-touch-number = <10>;			
-			focaltech,display-coords =  <0 0 1080 2340>;
-			
-			pinctrl-names = "pmx_ts_active","pmx_ts_suspend","pmx_ts_release";
-			pinctrl-0 = <&ts_int_active &ts_reset_active>;
-			pinctrl-1 = <&ts_int_suspend &ts_reset_suspend>;
-			pinctrl-2 = <&ts_release>;
-			/* regulator Configuration */
-			touch_vddio-supply = <&L9A>;
-			touch_lab-supply = <&lcdb_ldo_vreg>;
-			touch_ibb-supply = <&lcdb_ncp_vreg>;
-		};
+		compatible = "focaltech,fts";
+		panel = <&dsi_ft8719_truly_v2_video &dsi_ft8720m_xinli_v2_video>;
+		reg = <0>;
+		spi-max-frequency = <6000000>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <93 0x2>;
+		focaltech,reset-gpio = <&tlmm 103 0x01>;
+		focaltech,irq-gpio = <&tlmm 93 0x02>;
+		focaltech,max-touch-number = <10>;			
+		focaltech,display-coords =  <0 0 1080 2340>;
+
+		pinctrl-names = "pmx_ts_active","pmx_ts_suspend","pmx_ts_release";
+		pinctrl-0 = <&ts_int_active &ts_reset_active>;
+		pinctrl-1 = <&ts_int_suspend &ts_reset_suspend>;
+		pinctrl-2 = <&ts_release>;
+		/* regulator Configuration */
+		touch_vddio-supply = <&L9A>;
+		touch_lab-supply = <&lcdb_ldo_vreg>;
+		touch_ibb-supply = <&lcdb_ncp_vreg>;
+	};
 
 	/* Novatek device tree node */
 	novatek@1 {
 		compatible = "novatek,NVT-ts-spi";
-		panel = <&dsi_td4330_truly_v2_video &dsi_nt36672d_tianma_v2_video &dsi_nt36672d_xinli_v2_video>;
+		panel = <&dsi_td4330_truly_v2_video &dsi_nt36672d_tianma_v2_video &dsi_nt36672a_truly_v2_video &dsi_nt36672d_xinli_v2_video>;
 		reg = <1>; //Same as CS ID
 		status = "ok";
 

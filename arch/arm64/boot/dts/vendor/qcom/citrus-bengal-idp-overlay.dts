@@ -1,0 +1,13 @@
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include "bengal-idp.dtsi"
+#include "camera/citrus-camera-sensor-idp.dtsi"
+
+/ {
+	model = "Qualcomm Technologies, Inc. CITRUS BENGAL IDP";
+	compatible = "qcom,bengal-idp", "qcom,bengal", "qcom,idp";
+	qcom,msm-id = <444 0x10000>;
+	qcom,board-id = <34 0>;
+};

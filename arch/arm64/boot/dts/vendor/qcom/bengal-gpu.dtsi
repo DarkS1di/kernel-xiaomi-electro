@@ -107,7 +107,7 @@
 		qcom,chipid = <0x06010000>;
 
 		qcom,initial-pwrlevel = <6>;
-		qcom,idle-timeout = <80>;
+		qcom,idle-timeout = <58>;
 
 		qcom,ubwc-mode = <1>;
 		qcom,min-access-length = <64>;
@@ -136,7 +136,6 @@
 		qcom,gpubw-dev = <&gpubw>;
 		qcom,bus-control;
 		qcom,msm-bus,name = "grp3d";
-		qcom,bus-width = <32>;
 		qcom,msm-bus,num-cases = <12>;
 		qcom,msm-bus,num-paths = <1>;
 		qcom,msm-bus,vectors-KBps =
