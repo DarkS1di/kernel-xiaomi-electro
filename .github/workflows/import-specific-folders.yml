@@ -57,7 +57,9 @@ jobs:
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             git add .
-            git commit -m "Imported files from donor (${{ inputs.target_ref }})"
+            git commit -m "Import: ${{ inputs.paths_to_copy }}" \
+                       -m "Donor Repository: ${{ inputs.repo_url }}" \
+                       -m "Target Ref: ${{ inputs.target_ref }}"
             git push origin HEAD
             echo "Files successfully imported and pushed!"
           else

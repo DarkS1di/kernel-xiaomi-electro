@@ -8,12 +8,6 @@ on:
         required: true
         type: string
 
-      tag:
-        description: 'Tag'
-        required: false
-        type: boolean
-        default: false
-
       target_ref:
         description: 'Branch or Tag'
         required: true
@@ -38,7 +32,7 @@ jobs:
       contents: write
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
@@ -55,16 +49,11 @@ jobs:
           echo "Adding remote: ${{ inputs.repo_url }}"
           git remote add upstream ${{ inputs.repo_url }}
 
-          echo "Fetching: ${{ inputs.target_ref }} (Tag mode: ${{ inputs.tag }})"
+          echo "Fetching: ${{ inputs.target_ref }}"
           git fetch upstream ${{ inputs.target_ref }}
 
-          if [ "${{ inputs.tag }}" == "true" ]; then
-            echo "Merging TAG: ${{ inputs.target_ref }}"
-            git merge FETCH_HEAD --no-edit
-          else
-            echo "Merging BRANCH: upstream/${{ inputs.target_ref }}"
-            git merge "upstream/${{ inputs.target_ref }}" --no-edit
-          fi
+          echo "Merging: ${{ inputs.target_ref }}"
+          git merge FETCH_HEAD --no-edit
 
       - name: Collect Conflict Files
         if: steps.merge_attempt.outcome == 'failure' && inputs.upload_conflicts == true

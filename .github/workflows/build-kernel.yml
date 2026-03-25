@@ -22,7 +22,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout source
+      - name: Checkout Source
         uses: actions/checkout@v6
         with:
           submodules: recursive
@@ -112,6 +112,21 @@ jobs:
           chmod +x build.sh
           ./build.sh
 
+      - name: Move Bengal DTB and DTBO
+        run: |
+          chmod +x bengal.sh
+          ./bengal.sh
+
+      - name: Build Citrus DTBO
+        run: |
+          chmod +x citrus.sh
+          ./citrus.sh
+
+      - name: Build Lime DTBO
+        run: |
+          chmod +x lime.sh
+          ./lime.sh
+
       - name: Package Kernel
         run: |
           cp -r toolchain/packaging/AnyKernel3 .
@@ -120,7 +135,12 @@ jobs:
           sed -i "s/Variant.*/Variant       : ${{ inputs.kernel_variant }}/g" AnyKernel3/version
 
           chmod +x toolchain/packaging/pack.sh
-          bash toolchain/packaging/pack.sh out/arch/arm64/boot/Image "${{ env.ZIP_NAME }}.zip"
+          bash toolchain/packaging/pack.sh \
+          out/arch/arm64/boot/Image \
+          out/arch/arm64/boot/bengal/dtb \
+          out/arch/arm64/boot/citrus/dtbo.img \
+          out/arch/arm64/boot/lime/dtbo.img \
+          "${{ env.ZIP_NAME }}.zip"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v6

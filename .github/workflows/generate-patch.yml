@@ -12,7 +12,7 @@ jobs:
   create-patch:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
