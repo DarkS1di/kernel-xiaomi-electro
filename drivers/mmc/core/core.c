@@ -3697,23 +3697,14 @@ void mmc_rescan(struct work_struct *work)
 		goto out;
 	}
 
-<<<<<<< HEAD
-	mmc_rescan_try_freq(host, host->f_min);
-	host->err_stats[MMC_ERR_CMD_TIMEOUT] = 0;
-=======
 	/* If an SD express card is present, then leave it as is. */
 	if (mmc_card_sd_express(host)) {
 		mmc_release_host(host);
 		goto out;
 	}
 
-	for (i = 0; i < ARRAY_SIZE(freqs); i++) {
-		if (!mmc_rescan_try_freq(host, max(freqs[i], host->f_min)))
-			break;
-		if (freqs[i] <= host->f_min)
-			break;
-	}
->>>>>>> 7aeff6c7984c582f96916d12bd33eefbd746459c
+	mmc_rescan_try_freq(host, host->f_min);
+	host->err_stats[MMC_ERR_CMD_TIMEOUT] = 0;
 	mmc_release_host(host);
 
  out:

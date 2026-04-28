@@ -212,17 +212,15 @@ struct mmc_host_ops {
 	int	(*multi_io_quirk)(struct mmc_card *card,
 				  unsigned int direction, int blk_size);
 
-<<<<<<< HEAD
+	/* Initialize an SD express card, mandatory for MMC_CAP2_SD_EXP. */
+	int	(*init_sd_express)(struct mmc_host *host, struct mmc_ios *ios);
+
 	unsigned long (*get_max_frequency)(struct mmc_host *host);
 	unsigned long (*get_min_frequency)(struct mmc_host *host);
 	int	(*notify_load)(struct mmc_host *host, enum mmc_load);
 
 	void	(*notify_halt)(struct mmc_host *mmc, bool halt);
 	void	(*force_err_irq)(struct mmc_host *host, u64 errmask);
-=======
-	/* Initialize an SD express card, mandatory for MMC_CAP2_SD_EXP. */
-	int	(*init_sd_express)(struct mmc_host *host, struct mmc_ios *ios);
->>>>>>> 7aeff6c7984c582f96916d12bd33eefbd746459c
 };
 
 struct mmc_cqe_ops {
