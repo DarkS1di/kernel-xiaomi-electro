@@ -18,6 +18,10 @@ on:
         type: string
         default: '0'
 
+      flags:
+        description: 'Flags'
+        type: string
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -44,30 +48,16 @@ jobs:
         run: |
           git clone --depth=1 -b kernel-packaging https://github.com/NoxS1d-Dev/kernel-packaging.git toolchain/packaging
 
-      - name: Checkout KernelSU Patches
-        if: inputs.kernel_variant == 'KernelSU'
+      - name: Prepare Environment
         run: |
-          git clone --depth=1 -b main https://github.com/NoxS1d-Dev/ksu-kernel-4.19.git toolchain/kernelsu
+          if [[ "${{ inputs.kernel_variant }}" == "KernelSU" ]]; then
+            KERNEL_VARIANT="ksu"
+          else
+            KERNEL_VARIANT="default"
+          fi
 
-      - name: Apply KernelSU Patches
-        if: inputs.kernel_variant == 'KernelSU'
-        run: |
-          set -e
-
-          export KERNEL_ROOT=$GITHUB_WORKSPACE
-
-          echo "Apply KernelSU Patches..."
-          cp ./toolchain/kernelsu/kernel_patches/add_ksu_in_kernel-4.19.patch $KERNEL_ROOT/
-
-          cd $KERNEL_ROOT
-          patch -p1 --verbose < add_ksu_in_kernel-4.19.patch
-
-          echo "KernelSU Patches Applied Successfully"
-
-      - name: KernelSU
-        if: inputs.kernel_variant == 'KernelSU'
-        run: |
-          curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/master/kernel/setup.sh" | bash -
+          chmod +x prepare.sh
+          ./prepare.sh ${KERNEL_VARIANT} ${{ inputs.patch_version }} ${{ inputs.flags }}
 
       - name: Apply Configs
         if: inputs.kernel_variant == 'KernelSU'
@@ -107,6 +97,12 @@ jobs:
           ZIP_NAME="${NEW_NAME:1}" 
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
 
+      - name: Configure Build Host
+        run: |
+          echo "Setting KBUILD_BUILD_HOST to: ${{ runner.name }}"
+
+          sed -i "s/export KBUILD_BUILD_HOST=.*/export KBUILD_BUILD_HOST=${{ runner.name }}/g" build.sh
+
       - name: Build Kernel
         run: |
           chmod +x build.sh
@@ -131,8 +127,8 @@ jobs:
         run: |
           cp -r toolchain/packaging/AnyKernel3 .
 
-          sed -i "s/Electro Build.*/Electro Build : $(date +"%y.%m").${{ inputs.patch_version }}/g" AnyKernel3/version
-          sed -i "s/Variant.*/Variant       : ${{ inputs.kernel_variant }}/g" AnyKernel3/version
+          sed -i "s/ElectroX Build.*/ElectroX Build : $(date +"%y.%m").${{ inputs.patch_version }}/g" AnyKernel3/version
+          sed -i "s/Variant.*/Variant        : ${{ inputs.kernel_variant }}/g" AnyKernel3/version
 
           chmod +x toolchain/packaging/pack.sh
           bash toolchain/packaging/pack.sh \
