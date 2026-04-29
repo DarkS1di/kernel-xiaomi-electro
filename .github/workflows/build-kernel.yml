@@ -44,10 +44,6 @@ jobs:
           chmod +x clang.sh
           ./clang.sh
 
-      - name: Checkout Packaging Tools
-        run: |
-          git clone --depth=1 -b kernel-packaging https://github.com/NoxS1d-Dev/kernel-packaging.git toolchain/packaging
-
       - name: Prepare Environment
         run: |
           if [[ "${{ inputs.kernel_variant }}" == "KernelSU" ]]; then
@@ -58,24 +54,6 @@ jobs:
 
           chmod +x prepare.sh
           ./prepare.sh ${KERNEL_VARIANT} ${{ inputs.patch_version }} ${{ inputs.flags }}
-
-      - name: Apply Configs
-        if: inputs.kernel_variant == 'KernelSU'
-        run: |
-          cat <<'EOF' >> arch/arm64/configs/vendor/chime_defconfig
-
-          #
-          # KernelSU
-          #
-          CONFIG_KSU=y
-          # CONFIG_KSU_EXTRAS is not set
-          # CONFIG_KSU_KPROBES_KSUD is not set
-          # CONFIG_KSU_TAMPER_SYSCALL_TABLE is not set
-          # CONFIG_KSU_KRETPROBES_SUCOMPAT is not set
-          # CONFIG_KSU_DEBUG is not set
-          # CONFIG_KSU_THRONE_TRACKER_ALWAYS_THREADED is not set
-          CONFIG_KSU_LSM_SECURITY_HOOKS=y
-          EOF
 
       - name: Modify localversion File
         run: |
@@ -139,7 +117,7 @@ jobs:
           "${{ env.ZIP_NAME }}.zip"
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ env.ZIP_NAME }}
           path: ${{ env.ZIP_NAME }}.zip
