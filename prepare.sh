@@ -80,6 +80,9 @@ fi
 
 echo "Preparing Build Environment."
 
+echo "Checkout Packaging Tools"
+git clone --depth=1 -b kernel-packaging https://github.com/NoxS1d-Dev/kernel-packaging.git toolchain/packaging
+
 if [ "$KSU" = true ]; then
     echo "Checkout KernelSU Patches"
     git clone --depth=1 -b main https://github.com/NoxS1d-Dev/ksu-kernel-4.19.git toolchain/kernelsu
@@ -98,6 +101,26 @@ if [ "$KSU" = true ]; then
         patch -p1 --verbose < add_ksu_extras_in_kernel-4.19.patch
         echo "KernelSU Extras Patches Applied Successfully."
     fi
+
+    echo "Apply Configs"
+    cat <<EOF >> arch/arm64/configs/vendor/chime_defconfig
+
+#
+# KernelSU
+#
+CONFIG_KSU=y
+$(if [ "$KSU_EXTRAS" = true ]; then echo "CONFIG_KSU_EXTRAS=y"; else echo "# CONFIG_KSU_EXTRAS is not set"; fi)
+CONFIG_KSU_KPROBES_KSUD=y
+# CONFIG_KSU_TAMPER_SYSCALL_TABLE is not set
+CONFIG_KSU_FEATURE_SULOG=y
+CONFIG_KSU_FEATURE_ADBROOT=y
+# CONFIG_KSU_DEBUG is not set
+# CONFIG_KSU_THRONE_TRACKER_ALWAYS_THREADED is not set
+CONFIG_KSU_LSM_SECURITY_HOOKS=y
+EOF
+
+    echo "Verifying chime_defconfig:"
+    tail -n 20 arch/arm64/configs/vendor/chime_defconfig
 
 elif [ "$DEFAULT" = true ]; then
     :
