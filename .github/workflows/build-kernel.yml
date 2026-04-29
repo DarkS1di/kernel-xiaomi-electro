@@ -101,7 +101,7 @@ jobs:
         run: |
           echo "Setting KBUILD_BUILD_HOST to: ${{ runner.name }}"
 
-          sed -i "s/export KBUILD_BUILD_HOST=.*/export KBUILD_BUILD_HOST=${{ runner.name }}/g" build.sh
+          sed -i "s/export KBUILD_BUILD_HOST=\"\".*/export KBUILD_BUILD_HOST=\"${{ runner.name }}\"/g" build.sh
 
       - name: Build Kernel
         run: |
