@@ -13,9 +13,9 @@ if [ ! -e "toolchain/packaging" ]; then
     exit 1
 fi
 
-export KBUILD_BUILD_USER=noxs1d
-export KBUILD_BUILD_HOST=
-export ARCH=arm64
+export KBUILD_BUILD_USER="NoxS1d"
+export KBUILD_BUILD_HOST=""
+export ARCH="arm64"
 
 PATH=$PWD/toolchain/clang/bin:$PATH
 
