@@ -30,15 +30,15 @@ shift 2
 DEFAULT=false
 KSU=false
 KSU_EXTRAS=false
-SUFFIX=""
+VARIANT_DISPLAY=""
 UNKNOWN_ARGS=()
 
 if [[ "$KERNEL_VARIANT" == "ksu" ]]; then
     KSU=true
-    SUFFIX="ksu"
+    VARIANT_DISPLAY="KernelSU"
 elif [[ "$KERNEL_VARIANT" == "default" ]]; then
     DEFAULT=true
-    SUFFIX="default"
+    VARIANT_DISPLAY="Default"
 else
     echo "ERROR: Unknown first argument."
     echo "Run './prepare.sh --help' for a list of valid first argument."
@@ -79,27 +79,29 @@ else
 fi
 
 echo "Preparing Build Environment."
+echo ""
 
 echo "Checkout Packaging Tools"
 git clone --depth=1 -b kernel-packaging https://github.com/NoxS1d-Dev/kernel-packaging.git toolchain/packaging
+echo ""
 
 if [ "$KSU" = true ]; then
     echo "Checkout KernelSU Patches"
     git clone --depth=1 -b main https://github.com/NoxS1d-Dev/ksu-kernel-4.19.git toolchain/kernelsu
+    echo ""
 
     echo "Apply KernelSU Patches"
     cp ./toolchain/kernelsu/kernel_patches/add_ksu_in_kernel-4.19.patch ./
     patch -p1 --verbose < add_ksu_in_kernel-4.19.patch
     echo "KernelSU Patches Applied Successfully."
-
-    echo "Setup KernelSU"
-    curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/master/kernel/setup.sh" | bash -
+    echo ""
 
     if [ "$KSU_EXTRAS" = true ]; then
         echo "Apply KernelSU Extras Patches"
         cp ./toolchain/kernelsu/kernel_patches/extras/add_ksu_extras_in_kernel-4.19.patch ./
         patch -p1 --verbose < add_ksu_extras_in_kernel-4.19.patch
         echo "KernelSU Extras Patches Applied Successfully."
+        echo ""
     fi
 
     echo "Apply Configs"
@@ -121,9 +123,38 @@ EOF
 
     echo "Verifying chime_defconfig:"
     tail -n 20 arch/arm64/configs/vendor/chime_defconfig
+    echo ""
+
+    echo "Setup KernelSU"
+    curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/master/kernel/setup.sh" | bash -
+    echo ""
 
 elif [ "$DEFAULT" = true ]; then
     :
 fi
+
+echo "Generate Kernel Name"
+KERNEL_NAME=$(cat localversion | tr -d '\n')-$(date +"%y.%m").${PATCH_VERSION}-${KERNEL_VARIANT}
+echo "${KERNEL_NAME:1}"
+echo ""
+
+if [ -n "$GITHUB_ENV" ]; then
+    echo "KERNEL_NAME=${KERNEL_NAME:1}" >> $GITHUB_ENV
+fi
+
+echo "Modify localversion File"
+echo "$KERNEL_NAME" > localversion
+echo "Verifying localversion:"
+cat localversion
+echo ""
+
+echo "Configure AnyKernel3 version"
+sed -i "s/ElectroX Build.*/ElectroX Build : $(date +"%y.%m").${PATCH_VERSION}/g" toolchain/packaging/AnyKernel3/version
+sed -i "s/Variant.*/Variant        : ${VARIANT_DISPLAY}/g" toolchain/packaging/AnyKernel3/version
+echo ""
+
+echo "Stage Packaging Directory"
+cp -r toolchain/packaging/AnyKernel3 .
+echo ""
 
 echo "Preparation Complete."
