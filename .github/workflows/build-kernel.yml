@@ -31,16 +31,11 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Update Environment
-        run: |
-          sudo apt update
-
       - name: Install Dependencies
         run: |
+          sudo apt update
           sudo apt install -y build-essential libelf-dev
 
-      - name: Set up Clang
-        run: |
           chmod +x clang.sh
           ./clang.sh
 
@@ -54,26 +49,6 @@ jobs:
 
           chmod +x prepare.sh
           ./prepare.sh ${KERNEL_VARIANT} ${{ inputs.patch_version }} ${{ inputs.flags }}
-
-      - name: Modify localversion File
-        run: |
-          if [[ "${{ inputs.kernel_variant }}" == "KernelSU" ]]; then
-            TYPE_SUFFIX="ksu"
-          else
-            TYPE_SUFFIX="default"
-          fi
-
-          BASE_NAME=$(cat localversion | tr -d '\n')
-
-          NEW_NAME="${BASE_NAME}-$(date +"%y.%m").${{ inputs.patch_version }}-${TYPE_SUFFIX}"
-
-          echo "$NEW_NAME" > localversion
-
-          echo "The localversion file has been successfully updated. Contents:"
-          cat localversion
-
-          ZIP_NAME="${NEW_NAME:1}" 
-          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
 
       - name: Configure Build Host
         run: |
@@ -103,21 +78,16 @@ jobs:
 
       - name: Package Kernel
         run: |
-          cp -r toolchain/packaging/AnyKernel3 .
-
-          sed -i "s/ElectroX Build.*/ElectroX Build : $(date +"%y.%m").${{ inputs.patch_version }}/g" AnyKernel3/version
-          sed -i "s/Variant.*/Variant        : ${{ inputs.kernel_variant }}/g" AnyKernel3/version
-
           chmod +x toolchain/packaging/pack.sh
           bash toolchain/packaging/pack.sh \
           out/arch/arm64/boot/Image \
           out/arch/arm64/boot/bengal/dtb \
           out/arch/arm64/boot/citrus/dtbo.img \
           out/arch/arm64/boot/lime/dtbo.img \
-          "${{ env.ZIP_NAME }}.zip"
+          "${{ env.KERNEL_NAME }}.zip"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ env.ZIP_NAME }}
-          path: ${{ env.ZIP_NAME }}.zip
+          name: ${{ env.KERNEL_NAME }}
+          path: ${{ env.KERNEL_NAME }}.zip
