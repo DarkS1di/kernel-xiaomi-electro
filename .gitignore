@@ -140,12 +140,6 @@ kernel/configs/android-*.cfg
 #
 Android.bp
 
-# vendor device tree directories
-#arch/arm64/boot/dts/vendor/
-
-# Tech package directories
-#techpack/
-
 # Build script & out
 build.sh
 out/
@@ -154,4 +148,3 @@ out/
 clang/
 gcc/
 gcc32/
-local.config
