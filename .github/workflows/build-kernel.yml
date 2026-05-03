@@ -84,10 +84,10 @@ jobs:
           out/arch/arm64/boot/bengal/dtb \
           out/arch/arm64/boot/citrus/dtbo.img \
           out/arch/arm64/boot/lime/dtbo.img \
-          "${{ env.KERNEL_NAME }}.zip"
+          "${{ env.FULL_KERNEL_NAME }}.zip"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ env.KERNEL_NAME }}
-          path: ${{ env.KERNEL_NAME }}.zip
+          name: ${{ env.FULL_KERNEL_NAME }}
+          path: ${{ env.FULL_KERNEL_NAME }}.zip
