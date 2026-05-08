@@ -93,6 +93,6 @@ jobs:
           fi
 
           if [ "${{ steps.merge_attempt.outcome }}" == "failure" ]; then
-            echo "::error::Merge failed! Please resolve conflicts manually."
+            echo "Merge failed! Please resolve conflicts manually."
             exit 1
           fi
