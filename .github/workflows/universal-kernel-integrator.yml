@@ -69,7 +69,7 @@ jobs:
 
       - name: Upload Artifact
         if: steps.merge_attempt.outcome == 'failure' && inputs.upload_conflicts == true
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: conflict-files-${{ github.run_id }}
           path: conflict_files
@@ -87,7 +87,7 @@ jobs:
             rm -rf conflict_files
 
             git add .
-            git commit -m "FORCE MERGE: Committing conflicts from ${{ inputs.target_ref }}"
+            git commit -m "FORCE MERGE: Committing conflicts from ${{ inputs.target_ref }} (up to $(git rev-parse --short FETCH_HEAD))"
             git push origin HEAD
             exit 0
           fi
