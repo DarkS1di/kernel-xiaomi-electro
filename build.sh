@@ -14,7 +14,7 @@ if [ ! -e "toolchain/packaging" ]; then
 fi
 
 export KBUILD_BUILD_USER="NoxS1d"
-export KBUILD_BUILD_HOST=""
+export KBUILD_BUILD_HOST="GitHub Actions"
 export ARCH="arm64"
 
 PATH=$PWD/toolchain/clang/bin:$PATH
