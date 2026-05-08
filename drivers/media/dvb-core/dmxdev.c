@@ -859,6 +859,7 @@ static int dvb_dvr_open(struct inode *inode, struct file *file)
 			mutex_unlock(&dmxdev->mutex);
 			return -ENOMEM;
 		}
+<<<<<<< HEAD
 		dvb_ringbuffer_init(&dmxdev->dvr_buffer, mem, DVR_BUFFER_SIZE);
 		dvb_dmxdev_flush_events(&dmxdev->dvr_output_events);
 		dmxdev->dvr_output_events.event_mask.disable_mask = 0;
@@ -873,6 +874,14 @@ static int dvb_dvr_open(struct inode *inode, struct file *file)
 		dvb_vb2_init(&dmxdev->dvr_vb2_ctx, "dvr",
 			     file->f_flags & O_NONBLOCK);
 #endif
+=======
+		dmxdev->dvr_buffer.data = mem;
+		dmxdev->dvr_buffer.size = DVR_BUFFER_SIZE;
+		dvb_ringbuffer_reset(&dmxdev->dvr_buffer);
+		if (dmxdev->may_do_mmap)
+			dvb_vb2_init(&dmxdev->dvr_vb2_ctx, "dvr",
+				     file->f_flags & O_NONBLOCK);
+>>>>>>> a0cf0e1623b28b1d20f9626f32809952b7a40f15
 		dvbdev->readers--;
 	} else if (!dvbdev->writers) {
 		dmxdev->dvr_in_exit = 0;
