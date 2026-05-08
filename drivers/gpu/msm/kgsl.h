@@ -1,8 +1,12 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2008-2021, The Linux Foundation. All rights reserved.
+<<<<<<< HEAD
  * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
  * Copyright (C) 2020 XiaoMi, Inc.
+=======
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+>>>>>>> e040fb27c390db14b72e602bea39fcb12effdde2
  */
 #ifndef __KGSL_H
 #define __KGSL_H
@@ -490,6 +494,8 @@ void kgsl_mmu_remove_global(struct kgsl_device *device,
 		struct kgsl_memdesc *memdesc);
 
 /* Helper functions */
+unsigned long kgsl_get_align(struct kgsl_memdesc *memdesc);
+
 int kgsl_request_irq(struct platform_device *pdev, const  char *name,
 		irq_handler_t handler, void *data);
 
