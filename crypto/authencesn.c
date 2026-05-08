@@ -35,10 +35,6 @@ struct crypto_authenc_esn_ctx {
 	unsigned int reqoff;
 	struct crypto_ahash *auth;
 	struct crypto_skcipher *enc;
-<<<<<<< HEAD
-	struct crypto_sync_skcipher *null;
-=======
->>>>>>> a0cf0e1623b28b1d20f9626f32809952b7a40f15
 };
 
 struct authenc_esn_request_ctx {
@@ -181,23 +177,6 @@ static void crypto_authenc_esn_encrypt_done(struct crypto_async_request *req,
 	authenc_esn_request_complete(areq, err);
 }
 
-<<<<<<< HEAD
-static int crypto_authenc_esn_copy(struct aead_request *req, unsigned int len)
-{
-	struct crypto_aead *authenc_esn = crypto_aead_reqtfm(req);
-	struct crypto_authenc_esn_ctx *ctx = crypto_aead_ctx(authenc_esn);
-	SYNC_SKCIPHER_REQUEST_ON_STACK(skreq, ctx->null);
-
-	skcipher_request_set_sync_tfm(skreq, ctx->null);
-	skcipher_request_set_callback(skreq, aead_request_flags(req),
-				      NULL, NULL);
-	skcipher_request_set_crypt(skreq, req->src, req->dst, len, NULL);
-
-	return crypto_skcipher_encrypt(skreq);
-}
-
-=======
->>>>>>> a0cf0e1623b28b1d20f9626f32809952b7a40f15
 static int crypto_authenc_esn_encrypt(struct aead_request *req)
 {
 	struct crypto_aead *authenc_esn = crypto_aead_reqtfm(req);
@@ -358,10 +337,6 @@ static int crypto_authenc_esn_init_tfm(struct crypto_aead *tfm)
 	struct crypto_authenc_esn_ctx *ctx = crypto_aead_ctx(tfm);
 	struct crypto_ahash *auth;
 	struct crypto_skcipher *enc;
-<<<<<<< HEAD
-	struct crypto_sync_skcipher *null;
-=======
->>>>>>> a0cf0e1623b28b1d20f9626f32809952b7a40f15
 	int err;
 
 	auth = crypto_spawn_ahash(&ictx->auth);
