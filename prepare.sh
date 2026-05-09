@@ -148,12 +148,13 @@ EOF
 fi
 
 echo "Generate Kernel Name"
+CIP_VERSION=$(cat localversion-cip localversion-st | tr -d '\n\r')
 FULL_KERNEL_NAME=${KERNEL_NAME}-${DATE}.${PATCH_VERSION}-${KERNEL_VARIANT}
-echo "$FULL_KERNEL_NAME"
+echo "${FULL_KERNEL_NAME}${CIP_VERSION}"
 echo ""
 
 if [ -n "$GITHUB_ENV" ]; then
-    echo "FULL_KERNEL_NAME=$FULL_KERNEL_NAME" >> $GITHUB_ENV
+    echo "FULL_KERNEL_NAME=${FULL_KERNEL_NAME}${CIP_VERSION}" >> $GITHUB_ENV
 fi
 
 echo "Modify localversion File"
