@@ -1603,7 +1603,7 @@
 		      <0x04411000  0x1ff>;
 		reg-names = "tsens_srot_physical",
 			     "tsens_tm_physical";
-		interrupts = <0 275 4>, <0 190 4>;
+		interrupts = <0 275 0>, <0 190 0>;
 		interrupt-names = "tsens-upper-lower", "tsens-critical";
 		tsens-reinit-wa;
 		#thermal-sensor-cells = <1>;
@@ -2564,7 +2564,7 @@
 		reg = <0x5800000 0x34000>,
 			<0x5804000 0x28000>;
 		reg-names = "ipa-base", "gsi-base";
-		interrupts = <0 257 4>, <0 259 4>;
+		interrupts = <0 257 0>, <0 259 0>;
 		interrupt-names = "ipa-irq", "gsi-irq";
 		qcom,ipa-hw-ver = <16>; /* IPA core version = IPAv4.2 */
 		qcom,ipa-hw-mode = <0>;
