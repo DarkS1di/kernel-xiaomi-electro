@@ -148,12 +148,14 @@ EOF
 fi
 
 echo "Generate Kernel Name"
+CIP_VERSION=$(cat localversion-cip | tr -d '\n\r')
+ST_VERSION=$(cat localversion-st | tr -d '\n\r')
 FULL_KERNEL_NAME=${KERNEL_NAME}-${DATE}.${PATCH_VERSION}-${KERNEL_VARIANT}
-echo "$FULL_KERNEL_NAME"
+echo "${FULL_KERNEL_NAME}${CIP_VERSION}${ST_VERSION}"
 echo ""
 
 if [ -n "$GITHUB_ENV" ]; then
-    echo "FULL_KERNEL_NAME=$FULL_KERNEL_NAME" >> $GITHUB_ENV
+    echo "FULL_KERNEL_NAME=${FULL_KERNEL_NAME}${CIP_VERSION}${ST_VERSION}" >> $GITHUB_ENV
 fi
 
 echo "Modify localversion File"
@@ -163,8 +165,10 @@ cat localversion
 echo ""
 
 echo "Configure AnyKernel3 version"
-sed -i "s/ElectroX Build.*/ElectroX Build : ${DATE}.${PATCH_VERSION}/g" toolchain/packaging/AnyKernel3/version
-sed -i "s/Variant.*/Variant        : ${VARIANT_DISPLAY}/g" toolchain/packaging/AnyKernel3/version
+sed -i "s/CIP.*/CIP       : $(echo "$CIP_VERSION" | tr -dc '0-9')/g" toolchain/packaging/AnyKernel3/version
+sed -i "s/ST.*/ST        : $(echo "$ST_VERSION" | tr -dc '0-9')/g" toolchain/packaging/AnyKernel3/version
+sed -i "s/ElectroX.*/ElectroX  : ${DATE}.${PATCH_VERSION}/g" toolchain/packaging/AnyKernel3/version
+sed -i "s/Variant.*/Variant   : ${VARIANT_DISPLAY}/g" toolchain/packaging/AnyKernel3/version
 echo ""
 
 echo "Stage Packaging Directory"

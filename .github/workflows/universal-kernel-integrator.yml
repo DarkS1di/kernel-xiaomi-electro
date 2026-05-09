@@ -13,6 +13,16 @@ on:
         required: true
         type: string
 
+      paths_to_copy:
+        description: 'Paths to Import'
+        required: false
+        type: string
+
+      protected_commits:
+        description: 'Protected Commits'
+        required: false
+        type: string
+
       upload_conflicts:
         description: 'Upload Conflict Files'
         required: false
@@ -42,7 +52,7 @@ jobs:
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
 
-      - name: Merge Upstream
+      - name: Merge or Import
         id: merge_attempt
         continue-on-error: true
         run: |
@@ -52,19 +62,45 @@ jobs:
           echo "Fetching: ${{ inputs.target_ref }}"
           git fetch upstream ${{ inputs.target_ref }}
 
-          echo "Merging: ${{ inputs.target_ref }}"
-          git merge FETCH_HEAD --no-edit
+          if [ -z "${{ inputs.paths_to_copy }}" ]; then
+            echo "No paths provided. Merging: ${{ inputs.target_ref }}"
+            git merge FETCH_HEAD --no-edit
+          else
+            echo "Importing specific paths: ${{ inputs.paths_to_copy }}"
+            for path_to_remove in ${{ inputs.paths_to_copy }}; do
+              git rm -rf --ignore-unmatch "$path_to_remove"
+            done
+            
+            git checkout FETCH_HEAD -- ${{ inputs.paths_to_copy }}
+            
+            if [ -n "$(git status --porcelain)" ]; then
+              git add .
+              git commit -m "IMPORT PATHS: ${{ inputs.paths_to_copy }} from ${{ inputs.target_ref }} ($(git rev-parse --short FETCH_HEAD))"
+            fi
+
+            if [ -n "${{ inputs.protected_commits }}" ]; then
+              COMMITS=$(echo "${{ inputs.protected_commits }}" | tr ',' ' ')
+              for commit in $COMMITS; do
+                echo "Applying protected commit: $commit..."
+                if ! git cherry-pick --allow-empty --keep-redundant-commits $commit; then
+                  echo "Merge conflict detected on $commit!"
+                  echo "Leaving conflict markers in place for artifact collection."
+                  exit 1
+                fi
+              done
+            fi
+          fi
 
       - name: Collect Conflict Files
         if: steps.merge_attempt.outcome == 'failure' && inputs.upload_conflicts == true
         run: |
-          echo "Merge failed with conflicts. Collecting files..."
+          echo "Merge or Import failed with conflicts. Collecting files..."
           mkdir -p conflict_files
 
           git diff --name-only --diff-filter=U | while read file; do
-              mkdir -p "conflict_files/$(dirname "$file")"
-              cp "$file" "conflict_files/$file"
-              echo "Collected: $file"
+            mkdir -p "conflict_files/$(dirname "$file")"
+            cp "$file" "conflict_files/$file"
+            echo "Collected: $file"
           done
 
       - name: Upload Artifact
@@ -77,7 +113,7 @@ jobs:
       - name: Push Changes
         run: |
           if [ "${{ steps.merge_attempt.outcome }}" == "success" ]; then
-            echo "Merge successful. Pushing..."
+            echo "Merge or Import successful. Pushing..."
             git push origin HEAD
             exit 0
           fi
@@ -87,12 +123,12 @@ jobs:
             rm -rf conflict_files
 
             git add .
-            git commit -m "FORCE MERGE: Committing conflicts from ${{ inputs.target_ref }} (up to $(git rev-parse --short FETCH_HEAD))"
+            git commit -m "FORCE COMMIT: Committing conflicts from ${{ inputs.target_ref }} ($(git rev-parse --short FETCH_HEAD))"
             git push origin HEAD
             exit 0
           fi
 
           if [ "${{ steps.merge_attempt.outcome }}" == "failure" ]; then
-            echo "Merge failed! Please resolve conflicts manually."
+            echo "Merge or Import failed! Please resolve conflicts manually."
             exit 1
           fi
