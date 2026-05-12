@@ -14,14 +14,14 @@ print_usage() {
 Usage: ./prepare.sh [KERNEL_VARIANT] [PATCH_VERSION] [FLAGS...]
 
 KERNEL_VARIANT:
-  default       Vanilla
-  ksu           KernelSU
+  default               Build standard Vanilla kernel
+  ksu                   Build kernel with KernelSU hooks
 
 PATCH_VERSION:
   Any string/number to define the patch level
 
 FLAGS:
-  extras        Enable KernelSU Extras
+  selinux_hide          Enable KernelSU SELinux hide feature
 EOF
 }
 
@@ -37,16 +37,16 @@ shift 2
 
 DEFAULT=false
 KSU=false
-KSU_EXTRAS=false
+KSU_SELINUX_HIDE=false
 VARIANT_DISPLAY=""
 UNKNOWN_ARGS=()
 
-if [[ "$KERNEL_VARIANT" == "ksu" ]]; then
-    KSU=true
-    VARIANT_DISPLAY="KernelSU"
-elif [[ "$KERNEL_VARIANT" == "default" ]]; then
+if [[ "$KERNEL_VARIANT" == "default" ]]; then
     DEFAULT=true
     VARIANT_DISPLAY="Default"
+elif [[ "$KERNEL_VARIANT" == "ksu" ]]; then
+    KSU=true
+    VARIANT_DISPLAY="KernelSU"
 else
     echo "ERROR: Unknown first argument."
     echo "Run './prepare.sh --help' for a list of valid first argument."
@@ -55,8 +55,8 @@ fi
 
 for arg in "$@"; do
     case $arg in
-        extras)
-            KSU_EXTRAS=true
+        selinux_hide)
+            KSU_SELINUX_HIDE=true
             ;;
         *)
             UNKNOWN_ARGS+=("$arg")
@@ -70,14 +70,14 @@ if [ ${#UNKNOWN_ARGS[@]} -gt 0 ]; then
     exit 1
 fi
 
-if [ "$KSU_EXTRAS" = true ] && [ "$KSU" = false ]; then
-    echo "ERROR: The 'extras' flag is only valid when the base variant is 'ksu'."
+if [ "$KSU_SELINUX_HIDE" = true ] && [ "$KSU" = false ]; then
+    echo "ERROR: The 'selinux_hide' flag is only valid when the base variant is 'ksu'."
     exit 1
 fi
 
 ACTIVE_FLAGS=()
-if [ "$KSU_EXTRAS" = true ]; then
-    ACTIVE_FLAGS+=("extras")
+if [ "$KSU_SELINUX_HIDE" = true ]; then
+    ACTIVE_FLAGS+=("selinux_hide")
 fi
 
 if [ ${#ACTIVE_FLAGS[@]} -gt 0 ]; then
@@ -114,9 +114,9 @@ if [ "$KSU" = true ]; then
     patch -p1 --verbose < toolchain/kernelsu/kernel_patches/add_ksu_in_kernel-4.19.patch
     echo ""
 
-    if [ "$KSU_EXTRAS" = true ]; then
-        echo "Apply KernelSU Extras Patches"
-        patch -p1 --verbose < toolchain/kernelsu/kernel_patches/extras/add_ksu_extras_in_kernel-4.19.patch
+    if [ "$KSU_SELINUX_HIDE" = true ]; then
+        echo "Apply KernelSU SELinux Hide Patches"
+        patch -p1 --verbose < toolchain/kernelsu/kernel_patches/selinux_hide/add_ksu_selinux_hide_in_kernel-4.19.patch
         echo ""
     fi
 
@@ -127,11 +127,11 @@ if [ "$KSU" = true ]; then
 # KernelSU
 #
 CONFIG_KSU=y
-$(if [ "$KSU_EXTRAS" = true ]; then echo "CONFIG_KSU_EXTRAS=y"; else echo "# CONFIG_KSU_EXTRAS is not set"; fi)
 CONFIG_KSU_KPROBES_KSUD=y
 # CONFIG_KSU_TAMPER_SYSCALL_TABLE is not set
 CONFIG_KSU_FEATURE_SULOG=y
 CONFIG_KSU_FEATURE_ADBROOT=y
+$(if [ "$KSU_SELINUX_HIDE" = true ]; then echo "CONFIG_KSU_FEATURE_SELINUX_HIDE=y"; else echo "# CONFIG_KSU_FEATURE_SELINUX_HIDE is not set"; fi)
 # CONFIG_KSU_DEBUG is not set
 # CONFIG_KSU_THRONE_TRACKER_ALWAYS_THREADED is not set
 CONFIG_KSU_LSM_SECURITY_HOOKS=y
