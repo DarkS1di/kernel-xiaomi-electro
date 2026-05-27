@@ -14,14 +14,16 @@ print_usage() {
 Usage: ./prepare.sh [KERNEL_VARIANT] [PATCH_VERSION] [FLAGS...]
 
 KERNEL_VARIANT:
-  default               Build standard Vanilla kernel
-  ksu                   Build kernel with KernelSU hooks
+  default                           Build standard Vanilla kernel
+  ksu                               Build kernel with KernelSU hooks
 
 PATCH_VERSION:
   Any string/number to define the patch level
 
 FLAGS:
-  selinux_hide          Enable KernelSU SELinux hide feature
+  hack-arm64-branch-link            Enable EXPERIMENTAL inline bl patching
+  tamper-syscall-table              Enable EXPERIMENTAL syscall table tampering
+  slow-avc-audit                    Enable OPTIONAL slow_avc_audit hook
 EOF
 }
 
@@ -37,7 +39,9 @@ shift 2
 
 DEFAULT=false
 KSU=false
-KSU_SELINUX_HIDE=false
+KSU_HACK_ARM64_BRANCH_LINK=false
+KSU_TAMPER_SYSCALL_TABLE=false
+KSU_SLOW_AVC_AUDIT=false
 VARIANT_DISPLAY=""
 UNKNOWN_ARGS=()
 
@@ -55,8 +59,14 @@ fi
 
 for arg in "$@"; do
     case $arg in
-        selinux_hide)
-            KSU_SELINUX_HIDE=true
+        hack-arm64-branch-link)
+            KSU_HACK_ARM64_BRANCH_LINK=true
+            ;;
+        tamper-syscall-table)
+            KSU_TAMPER_SYSCALL_TABLE=true
+            ;;
+        slow-avc-audit)
+            KSU_SLOW_AVC_AUDIT=true
             ;;
         *)
             UNKNOWN_ARGS+=("$arg")
@@ -70,14 +80,39 @@ if [ ${#UNKNOWN_ARGS[@]} -gt 0 ]; then
     exit 1
 fi
 
-if [ "$KSU_SELINUX_HIDE" = true ] && [ "$KSU" = false ]; then
-    echo "ERROR: The 'selinux_hide' flag is only valid when the base variant is 'ksu'."
+if [ "$KSU_HACK_ARM64_BRANCH_LINK" = true ] && [ "$KSU" = false ]; then
+    echo "ERROR: The 'hack-arm64-branch-link' flag is only valid when the base variant is 'ksu'."
+    exit 1
+fi
+
+if [ "$KSU_TAMPER_SYSCALL_TABLE" = true ] && [ "$KSU" = false ]; then
+    echo "ERROR: The 'tamper-syscall-table' flag is only valid when the base variant is 'ksu'."
+    exit 1
+fi
+
+if [ "$KSU_SLOW_AVC_AUDIT" = true ] && [ "$KSU" = false ]; then
+    echo "ERROR: The 'slow-avc-audit' flag is only valid when the base variant is 'ksu'."
+    exit 1
+fi
+
+if [ "$KSU_HACK_ARM64_BRANCH_LINK" = true ] && [ "$KSU_TAMPER_SYSCALL_TABLE" = true ]; then
+    echo "ERROR: Flags 'hack-arm64-branch-link' and 'tamper-syscall-table' are mutually exclusive."
     exit 1
 fi
 
 ACTIVE_FLAGS=()
-if [ "$KSU_SELINUX_HIDE" = true ]; then
-    ACTIVE_FLAGS+=("selinux_hide")
+if [ "$KSU_HACK_ARM64_BRANCH_LINK" = true ]; then
+    ACTIVE_FLAGS+=("hack-arm64-branch-link")
+    KERNEL_VARIANT=${KERNEL_VARIANT}-exp-bl
+fi
+
+if [ "$KSU_TAMPER_SYSCALL_TABLE" = true ]; then
+    ACTIVE_FLAGS+=("tamper-syscall-table")
+    KERNEL_VARIANT=${KERNEL_VARIANT}-exp-sys
+fi
+
+if [ "$KSU_SLOW_AVC_AUDIT" = true ]; then
+    ACTIVE_FLAGS+=("slow-avc-audit")
 fi
 
 if [ ${#ACTIVE_FLAGS[@]} -gt 0 ]; then
@@ -110,13 +145,21 @@ if [ "$KSU" = true ]; then
     git clone --depth=1 -b main $REPO_KERNELSU_PATCHES toolchain/kernelsu
     echo ""
 
-    echo "Apply KernelSU Patches"
-    patch -p1 --verbose < toolchain/kernelsu/kernel_patches/add_ksu_in_kernel-4.19.patch
-    echo ""
+    if [ "$KSU_TAMPER_SYSCALL_TABLE" = false ]; then
+        if [ "$KSU_HACK_ARM64_BRANCH_LINK" = false ]; then
+            echo "Apply KernelSU Patches"
+            patch -p1 --verbose < toolchain/kernelsu/kernel_patches/add_ksu_in_kernel-4.19.patch
+            echo ""
+        else
+            echo "Apply KernelSU Patches"
+            patch -p1 --verbose < toolchain/kernelsu/kernel_patches/hack_arm64_branch_link/add_ksu_hack_arm64_branch_link_in_kernel-4.19.patch
+            echo ""
+        fi
+    fi
 
-    if [ "$KSU_SELINUX_HIDE" = true ]; then
-        echo "Apply KernelSU SELinux Hide Patches"
-        patch -p1 --verbose < toolchain/kernelsu/kernel_patches/selinux_hide/add_ksu_selinux_hide_in_kernel-4.19.patch
+    if [ "$KSU_SLOW_AVC_AUDIT" = true ]; then
+        echo "Apply KernelSU Slow AVC Audit Patches"
+        patch -p1 --verbose < toolchain/kernelsu/kernel_patches/slow_avc_audit/add_ksu_slow_avc_audit_in_kernel-4.19.patch
         echo ""
     fi
 
@@ -128,10 +171,10 @@ if [ "$KSU" = true ]; then
 #
 CONFIG_KSU=y
 CONFIG_KSU_KPROBES_KSUD=y
-# CONFIG_KSU_TAMPER_SYSCALL_TABLE is not set
+$(if [ "$KSU_HACK_ARM64_BRANCH_LINK" = true ]; then echo "CONFIG_KSU_HACK_ARM64_BRANCH_LINK=y"; else echo "# CONFIG_KSU_HACK_ARM64_BRANCH_LINK is not set"; fi)
+$(if [ "$KSU_TAMPER_SYSCALL_TABLE" = true ]; then echo "CONFIG_KSU_TAMPER_SYSCALL_TABLE=y"; else echo "# CONFIG_KSU_TAMPER_SYSCALL_TABLE is not set"; fi)
 CONFIG_KSU_FEATURE_SULOG=y
 CONFIG_KSU_FEATURE_ADBROOT=y
-$(if [ "$KSU_SELINUX_HIDE" = true ]; then echo "CONFIG_KSU_FEATURE_SELINUX_HIDE=y"; else echo "# CONFIG_KSU_FEATURE_SELINUX_HIDE is not set"; fi)
 # CONFIG_KSU_DEBUG is not set
 # CONFIG_KSU_THRONE_TRACKER_ALWAYS_THREADED is not set
 CONFIG_KSU_LSM_SECURITY_HOOKS=y
