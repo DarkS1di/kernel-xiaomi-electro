@@ -30,6 +30,7 @@
 #include <soc/qcom/secure_buffer.h>
 #include <linux/soc/qcom/smem.h>
 #include <linux/kthread.h>
+#include <soc/qcom/boot_stats.h>
 
 #include <linux/uaccess.h>
 #include <asm/setup.h>
@@ -1231,6 +1232,7 @@ int pil_boot(struct pil_desc *desc)
 	struct pil_priv *priv = desc->priv;
 	bool mem_protect = false;
 	bool hyp_assign = false;
+	char boot_marker[120];
 
 	ret = pil_notify_aop(desc, "on");
 	if (ret < 0) {
@@ -1374,6 +1376,10 @@ int pil_boot(struct pil_desc *desc)
 	}
 	pil_log("reset_done", desc);
 	pil_info(desc, "Brought out of reset\n");
+	snprintf(boot_marker, sizeof(boot_marker),
+			"L - %s Brought out of reset", desc->name);
+	place_marker(boot_marker);
+
 	desc->modem_ssr = false;
 err_auth_and_reset:
 	if (ret && desc->subsys_vmid > 0) {
