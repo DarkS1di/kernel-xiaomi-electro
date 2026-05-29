@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+CLANG="ZyC Clang 23.0.0"
+
+URL="https://github.com/ZyCromerZ/Clang/releases/download/23.0.0git-20260130-release/Clang-23.0.0git-20260130.tar.gz"
+
 if [ ! -e "toolchain" ]; then
     echo "mkdir toolchain"
     mkdir toolchain
@@ -20,9 +24,7 @@ fi
 mkdir clang
 cd clang
 
-URL="https://github.com/ZyCromerZ/Clang/releases/download/20.0.0git-20250129-release/Clang-20.0.0git-20250129.tar.gz"
-
-echo "Downloading ZyC Clang 20.0.0git..."
+echo "Downloading $CLANG..."
 wget -q "$URL" -O clang.tar.gz
 
 echo "Extracting..."
