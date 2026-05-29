@@ -17,16 +17,11 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Update Environment
-        run: |
-          sudo apt update
-
       - name: Install Dependencies
         run: |
+          sudo apt update
           sudo apt install -y build-essential
 
-      - name: Set up Clang
-        run: |
           chmod +x clang.sh
           ./clang.sh
 
@@ -41,7 +36,7 @@ jobs:
           cp out/.config out/${{ inputs.defconfig_name }}
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ inputs.defconfig_name }}
           path: out/${{ inputs.defconfig_name }}

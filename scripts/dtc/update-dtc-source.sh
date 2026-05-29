@@ -76,4 +76,4 @@ ${dtc_log}
 EOF
 )
 
-git commit -e -v -s -m "${commit_msg}"
+git commit -v -s -m "${commit_msg}"
