@@ -1,0 +1,50 @@
+name: Sync Upstream DTC
+
+on:
+  workflow_dispatch:
+    inputs:
+      dtc_version:
+        description: 'DTC Version Tag'
+        required: true
+
+jobs:
+  sync-dtc:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Kernel Repository
+        uses: actions/checkout@v6
+        with:
+          path: kernel
+          fetch-depth: 0
+
+      - name: Checkout Upstream DTC
+        uses: actions/checkout@v6
+        with:
+          repository: dgibson/dtc
+          ref: ${{ github.event.inputs.dtc_version }}
+          path: dtc
+          fetch-depth: 0
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flex bison pkg-config libyaml-dev
+
+      - name: Configure Git
+        working-directory: kernel
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Run update-dtc-source.sh
+        working-directory: kernel
+        run: |
+          ./scripts/dtc/update-dtc-source.sh
+
+      - name: Push Changes to Repository
+        working-directory: kernel
+        run: |
+          git push origin HEAD
