@@ -53,15 +53,6 @@
 #define COMPR_CODEC_CAPS_OVERFLOW
 #endif
 
-/* TODO:
- * - add substream support for multiple devices in case of
- *	SND_DYNAMIC_MINORS is not used
- * - Multiple node representation
- *	driver should be able to register multiple nodes
- */
-
-static DEFINE_MUTEX(device_mutex);
-
 struct snd_compr_file {
 	unsigned long caps;
 	struct snd_compr_stream stream;
@@ -1165,6 +1156,7 @@ int snd_compress_new(struct snd_card *card, int device,
 }
 EXPORT_SYMBOL_GPL(snd_compress_new);
 
+<<<<<<< HEAD
 /*
  * snd_compress_free: free compress device
  * @card: sound card pointer
@@ -1242,6 +1234,8 @@ int snd_compress_deregister(struct snd_compr *device)
 }
 EXPORT_SYMBOL_GPL(snd_compress_deregister);
 
+=======
+>>>>>>> 774e9597d38ad0d067a1d50e502503224b74f9f5
 MODULE_DESCRIPTION("ALSA Compressed offload framework");
 MODULE_AUTHOR("Vinod Koul <vinod.koul@linux.intel.com>");
 MODULE_LICENSE("GPL v2");
